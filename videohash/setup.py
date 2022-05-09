@@ -1,9 +1,6 @@
 import os.path
 from setuptools import setup
 
-with open(os.path.join(os.path.dirname(__file__), "README.md"), encoding="utf-8") as f:
-    long_description = f.read()
-
 about = {}
 with open(os.path.join(os.path.dirname(__file__), "videohash", "__version__.py")) as f:
     exec(f.read(), about)
@@ -17,7 +14,7 @@ setup(
     packages=["videohash"],
     version=version,
     description=about["__description__"],
-    long_description=long_description,
+    long_description="",
     long_description_content_type="text/markdown",
     license=about["__license__"],
     author=about["__author__"],
