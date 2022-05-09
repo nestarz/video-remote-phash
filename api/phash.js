@@ -44,11 +44,12 @@ export default catchHandle(async (req, res) => {
     stream.on("data", (buf) => buffers.push(buf));
     stream.on("end", () => res(Buffer.concat(buffers)));
     const isVideo = !!crop;
+    console.log(crop);
     ffmpeg(url)
       .outputOptions([
         "-frames 1",
         `-vf ${[
-          isVideo && `crop=${crop}`,
+          isVideo && !crop.includes("-") && `crop=${crop}`,
           "crop=min(ih\\,iw):min(ih\\,iw),scale=50:50",
           isVideo &&
             "select='(gte(t,2))*(isnan(prev_selected_t)+gte(t-prev_selected_t,2))',tile=5x5",
