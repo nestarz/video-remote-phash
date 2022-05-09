@@ -50,5 +50,5 @@ export default async (req, res) => {
       "Content-Type": hash === "true" ? "text/plain" : "image/png",
       "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
     })
-    .end(hash === "true" ? await imghash.hash(buffer) : buffer);
+    .end(hash === "true" ? await imghash.hash(buffer, 4, "binary") : buffer);
 };
