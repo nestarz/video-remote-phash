@@ -3,7 +3,6 @@ from setuptools import setup
 
 setup(
     name="VideoHash",
-    packages=["videohash"],
     version="1.0",
     keywords=[
         "videohash",
@@ -16,7 +15,7 @@ setup(
         "video",
         "video diff",
     ],
-    install_requires=["ImageHash", "Pillow", "yt-dlp"],
+    install_requires=["ImageHash"],
     python_requires=">=3.6",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
