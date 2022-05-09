@@ -2,6 +2,13 @@ from http.server import BaseHTTPRequestHandler
 from urllib import parse
 from videohash import VideoHash
 
+import subprocess
+import sys
+
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+install("videohash")
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         s = self.path
