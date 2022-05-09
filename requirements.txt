@@ -1,1 +1,1 @@
-./videohash-2
+./videohash

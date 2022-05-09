@@ -1,3 +1,2 @@
 ImageHash
 Pillow
-yt-dlp
