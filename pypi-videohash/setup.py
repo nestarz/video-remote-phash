@@ -15,7 +15,6 @@ setup(
         "video",
         "video diff",
     ],
-    install_requires=["ImageHash"],
     python_requires=">=3.6",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
