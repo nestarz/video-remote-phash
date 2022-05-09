@@ -12,6 +12,6 @@ class handler(BaseHTTPRequestHandler):
         if "url" in dic:
             message = str(VideoHash(url=dic["url"]))
         else:
-            message = "Missing url!"
+            message = "Missing url !"
         self.wfile.write(message.encode())
         return
