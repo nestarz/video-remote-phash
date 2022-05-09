@@ -1,6 +1,5 @@
 from http.server import BaseHTTPRequestHandler
 from urllib import parse
-from videohash import VideoHash
 
 import subprocess
 import sys
@@ -11,6 +10,8 @@ install("videohash")
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        from videohash import VideoHash
+
         s = self.path
         dic = dict(parse.parse_qsl(parse.urlsplit(s).query))
         self.send_response(200)
