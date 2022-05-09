@@ -19,13 +19,11 @@ const exec = async (cmd, args, onData) => {
 
 const catchHandle = (handler) => (req, res) =>
   handler(req, res).catch((error) =>
-    res
-      .writeHead(500)
-      .end(
-        JSON.stringify({
-          error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
-        })
-      )
+    res.writeHead(500).end(
+      JSON.stringify({
+        error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+      })
+    )
   );
 
 export default catchHandle(async (req, res) => {
@@ -70,9 +68,8 @@ export default catchHandle(async (req, res) => {
       "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
     })
     .end(
-      JSON.stringify({
-        data:
-          hash === "true" ? await imghash.hash(buffer, 4, "binary") : buffer,
-      })
+      hash === "true"
+        ? JSON.stringify({ data: await imghash.hash(buffer, 4, "binary") })
+        : buffer
     );
 });
