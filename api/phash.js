@@ -23,7 +23,7 @@ const catchHandle = (handler) => (req, res) =>
       .writeHead(500)
       .end(
         JSON.stringify({
-          error: JSON.stringify(error, Object.getOwnPropertyNames(err)),
+          error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
         })
       )
   );
