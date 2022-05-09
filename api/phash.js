@@ -27,7 +27,6 @@ export default async (req, res) => {
     (res) => (d) =>
       apply(/.*crop=(.*?)($|\n| ).*/.exec(d), (v) => (v ? res(v[1]) : null))
   );
-  console.log(crop);
 
   const buffer = await new Promise((res) => {
     const stream = PassThrough();
@@ -42,7 +41,6 @@ export default async (req, res) => {
         "-vcodec png",
         "-f rawvideo",
       ])
-      .on("start", (cmdline) => console.log(cmdline))
       .on("error", () => null)
       .pipe(stream, { end: true });
   });
