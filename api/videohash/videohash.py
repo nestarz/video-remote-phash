@@ -4,10 +4,10 @@ from pathlib import Path
 import re
 import random
 from PIL import Image
-import imagehash
 import numpy as np
 
 from .collagemaker import MakeCollage
+from .whash import whash
 from .downloader import Download
 from .videoduration import video_duration
 from .framesextractor import FramesExtractor
@@ -523,7 +523,7 @@ class VideoHash:
 
         self.bitlist: List = []
 
-        for row in imagehash.whash(self.image).hash.astype(int).tolist():
+        for row in whash(self.image).hash.astype(int).tolist():
             self.bitlist.extend(row)
 
         self.hash: str = ""

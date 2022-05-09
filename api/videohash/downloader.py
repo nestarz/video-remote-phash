@@ -1,5 +1,6 @@
 from shutil import which
 from subprocess import Popen, PIPE
+import urllib.request
 
 from .utils import does_path_exists, get_list_of_all_files_in_dir
 from .exceptions import DownloadOutPutDirDoesNotExist, DownloadFailed
@@ -58,29 +59,10 @@ class Download:
         :rtype: NoneType
 
         """
-        worst = " "
-        if self.worst:
-            worst = " -f worst "
 
-        command = (
-            f'"{self.yt_dlp_path}"'
-            + worst
-            + " "
-            + '"'
-            + self.url
-            + '"'
-            + " -o "
-            + '"'
-            + self.output_dir
-            + "video_file.%(ext)s"
-            + '"'
-        )
+        urllib.request.urlretrieve(self.url, self.output_dir + "video_file.mp4") 
 
-        process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
-        output, error = process.communicate()
-        yt_dlp_output = output.decode()
-        yt_dlp_error = error.decode()
-
+        print(get_list_of_all_files_in_dir(self.output_dir))
         if len(get_list_of_all_files_in_dir(self.output_dir)) == 0:
             raise DownloadFailed(
                 f"'{self.yt_dlp_path}' failed to download the video at"
