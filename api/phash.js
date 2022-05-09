@@ -33,14 +33,14 @@ export default async (req, res) => {
     const buffers = [];
     stream.on("data", (buf) => buffers.push(buf));
     stream.on("end", () => res(Buffer.concat(buffers)));
-    const cropCmd = crop ? `crop=${crop}` : null;
+    const isVideo = !!crop;
     ffmpeg(url)
       .outputOptions([
         "-frames 1",
         `-vf ${[
-          cropCmd,
+          isVideo && `crop=${crop}`,
           "crop=min(ih\\,iw):min(ih\\,iw),scale=50:50",
-          cropCmd &&
+          isVideo &&
             "select='(gte(t,2))*(isnan(prev_selected_t)+gte(t-prev_selected_t,2))',tile=5x5",
         ]
           .filter((v) => v)
@@ -52,8 +52,6 @@ export default async (req, res) => {
       .on("error", console.error)
       .pipe(stream, { end: true });
   });
-
-  console.log(crop, buffer);
 
   res
     .writeHead(200, {
