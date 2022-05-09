@@ -1,0 +1,21 @@
+{
+  "name": "video-phash",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^1.4.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "i": "^0.3.7",
+    "imghash": "^0.0.9",
+    "npm": "^8.9.0"
+  }
+}
