@@ -75,18 +75,6 @@ API Reference : https://github.com/akamhy/videohash/wiki/API-Reference
 from .videohash import VideoHash
 from .videoduration import video_duration
 
-from .__version__ import (
-    __title__,
-    __description__,
-    __url__,
-    __version__,
-    __status__,
-    __author__,
-    __author_email__,
-    __license__,
-    __copyright__,
-)
-
 from .exceptions import (
     VideoHashError,
     FFmpegError,

@@ -1,26 +1,10 @@
 import os.path
 from setuptools import setup
 
-about = {}
-with open(os.path.join(os.path.dirname(__file__), "videohash", "__version__.py")) as f:
-    exec(f.read(), about)
-
-version = str(about["__version__"])
-
-download_url = f"https://github.com/akamhy/videohash/archive/{version}.tar.gz"
-
 setup(
-    name=about["__title__"],
+    name="VideoHash",
     packages=["videohash"],
-    version=version,
-    description=about["__description__"],
-    long_description="",
-    long_description_content_type="text/markdown",
-    license=about["__license__"],
-    author=about["__author__"],
-    author_email=about["__author_email__"],
-    url=about["__url__"],
-    download_url=download_url,
+    version="1.0",
     keywords=[
         "videohash",
         "near duplicate video detection",
