@@ -27,8 +27,9 @@ const catchHandle = (handler) => (req, res) =>
   );
 
 export default catchHandle(async (req, res) => {
-  const { url, hash = "false" } = req.query;
-  if (!url) throw Error("Missing video url");
+  const { url: raw, hash = "false" } = req.query;
+  if (!raw) throw Error("Missing video url");
+  const url = decodeURIComponent(raw);
 
   const crop = await exec(
     ffmpegPath,
