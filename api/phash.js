@@ -17,7 +17,18 @@ const exec = async (cmd, args, onData) => {
   });
 };
 
-export default async (req, res) => {
+const catchHandle = (handler) => (req, res) =>
+  handler(req, res).catch((error) =>
+    res
+      .writeHead(500)
+      .end(
+        JSON.stringify({
+          error: JSON.stringify(error, Object.getOwnPropertyNames(err)),
+        })
+      )
+  );
+
+export default catchHandle(async (req, res) => {
   const { url, hash = "false" } = req.query;
   if (!url) throw Error("Missing video url");
 
@@ -58,5 +69,10 @@ export default async (req, res) => {
       "Content-Type": hash === "true" ? "text/plain" : "image/png",
       "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
     })
-    .end(hash === "true" ? await imghash.hash(buffer, 4, "binary") : buffer);
-};
+    .end(
+      JSON.stringify({
+        data:
+          hash === "true" ? await imghash.hash(buffer, 4, "binary") : buffer,
+      })
+    );
+});
