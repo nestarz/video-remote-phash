@@ -10,6 +10,7 @@ import { tmpdir } from "os";
 import { x as untar } from "tar";
 import { mkdir } from "fs/promises";
 import axios from "axios";
+import fs from "fs";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 const unzip = (readStream, cwd) =>
@@ -19,12 +20,21 @@ const unzip = (readStream, cwd) =>
       .pipe(untar({ cwd }).on("finish", resolve).on("error", reject))
   );
 
+const getAllFiles = (dirPath, arrayOfFiles = []) => {
+  fs.readdirSync(dirPath).forEach((file) => {
+    if (fs.statSync(dirPath + "/" + file).isDirectory())
+      arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+    else arrayOfFiles.push(join(dirPath, "/", file));
+  });
+  return arrayOfFiles.filter((v) => v.includes(".js"));
+};
+
 const tfLoader = async () => {
   const version = "v2.0.11";
   const br = "nodejs14.x-tf2.8.6.br";
   const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
   const TFJS_PATH = join(tmpdir(), "tfjs-node");
-  const isLambda = true;// Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+  const isLambda = true; // Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
   return !isLambda
     ? import("@tensorflow/tfjs-node")
     : mkdir(TFJS_PATH)
@@ -34,6 +44,9 @@ const tfLoader = async () => {
             .then(({ data: stream }) => unzip(stream, TFJS_PATH))
         )
         .catch(() => null)
+        .then(() => {
+          throw Error(getAllFiles(TFJS_PATH));
+        })
         .then(() => import(TFJS_PATH + "/index.js"));
 };
 
