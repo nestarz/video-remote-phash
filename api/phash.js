@@ -60,14 +60,11 @@ const tfLoader = async () => {
         .then(async () =>
           writeFile(
             KERNEL,
-            "throw Error(require('./kernels/_FusedMatMul.js'));" +
+            "throw Error(JSON.stringify(require('./kernels/_FusedMatMul.js')));" +
               (await readFile(KERNEL, "utf-8"))
           )
         )
-        .then(() => import(TFJS_PATH + "/index.js"))
-        .catch((err) => {
-          throw Error([err, getAllFiles(TFJS_PATH)]);
-        });
+        .then(() => import(TFJS_PATH + "/index.js"));
 };
 
 const createWarmer = (asyncFn) => {
