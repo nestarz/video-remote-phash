@@ -1,6 +1,8 @@
 import axios from "axios";
 import { PrepareLobe, isLambda } from "tfjs-node-lambda-helpers";
 
+console.log(process.versions);
+
 const baseUrl = isLambda()
   ? `https://${process.env.VERCEL_URL}`
   : `http://localhost:3000`;
