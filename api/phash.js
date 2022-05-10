@@ -32,6 +32,7 @@ const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download
 const filepath = join(tmpdir(), encodeURIComponent(version + br));
 const TFJS_PATH = join(tmpdir(), "tfjs-node");
 const isLambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+console.log("goingImportTf");
 console.time("importTf");
 const tf = !isLambda
   ? await import("@tensorflow/tfjs-node")
