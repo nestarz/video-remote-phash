@@ -1,11 +1,22 @@
 import ffmpeg from "fluent-ffmpeg";
 import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
-import imghash from "imghash";
+import { imageHash } from "image-hash";
 import { PassThrough } from "stream";
 import { spawn } from "child_process";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
+const hex2bin = (data) =>
+  data
+    .split("")
+    .map((i) => parseInt(i, 16).toString(2).padStart(4, "0"))
+    .join("");
+const getHash = (buffer) =>
+  new Promise((res, rej) =>
+    imageHash({ data: buffer }, 8, true, (err, data) =>
+      err ? rej(err) : res(hex2bin(data))
+    )
+  );
 const apply = (v, fn) => fn(v);
 const exec = async (cmd, args, onData) => {
   const proc = spawn(cmd, args);
@@ -70,8 +81,6 @@ export default catchHandle(async (req, res) => {
       "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
     })
     .end(
-      hash === "true"
-        ? JSON.stringify({ data: await imghash.hash(buffer, 4, "binary") })
-        : buffer
+      hash === "true" ? JSON.stringify({ data: await getHash(buffer) }) : buffer
     );
 });
