@@ -1,23 +1,6 @@
 {
-  "name": "video-phash",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "axios": "^0.27.2",
-    "fluent-ffmpeg": "^2.1.2",
-    "imghash": "^0.0.9",
-    "tar": "^6.1.11",
-    "tfjs-node-lambda": "^2.0.22",
-    "undici": "^5.1.1",
-    "zlib": "^1.0.5"
-  }
+	"dependencies": {
+		"tfjs-node-lambda-helpers": "^1.1.7",
+		"axios": "^0.27.2"
+	}
 }
