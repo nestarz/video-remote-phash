@@ -3,8 +3,13 @@ import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 import imghash from "imghash";
 import { PassThrough } from "stream";
 import { spawn } from "child_process";
+import mobilenet from "@tensorflow-models/mobilenet";
+import * as tfnode from "@tensorflow/tfjs-node";
+import * as tf from "@tensorflow/tfjs";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
+
+const getTensor = (t) => Array.from(t.dataSync());
 
 const getHash = (buffer) => imghash.hash(buffer, 8, "binary");
 const apply = (v, fn) => fn(v);
@@ -28,6 +33,13 @@ const catchHandle = (handler) => (req, res) =>
       })
     )
   );
+
+const model = await mobilenet.load();
+const computeDist = ((A) => (B) => {
+  const norm = A && B ? getTensor(tf.norm(tf.sub(B, A), 2, -1))[0] : null;
+  A = B;
+  return norm;
+})();
 
 export default catchHandle(async (req, res) => {
   const { url: raw, hash = "false" } = req.query;
@@ -70,7 +82,7 @@ export default catchHandle(async (req, res) => {
           "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
           isVideo &&
             `select='(isnan(prev_selected_t)+gte(t-prev_selected_t,1))',tile=${N}x${N}`,
-          "scale=1024:1024",
+          `scale=1024:1024`,
         ]
           .filter((v) => v)
           .join(",")}`,
@@ -83,12 +95,26 @@ export default catchHandle(async (req, res) => {
   });
   console.timeEnd("tile");
 
+  console.time("embedding");
+  const tfimage = tfnode.node.decodeImage(buffer);
+  const tensor = await model.infer(tfimage, true);
+  console.timeEnd("embedding");
+  const norm_prev = computeDist(tensor);
+
   res
     .writeHead(200, {
-      "Content-Type": hash === "true" ? "text/plain" : "image/png",
+      "Content-Type": hash === "true" ? "application/json" : "image/png",
       "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
     })
     .end(
-      hash === "true" ? JSON.stringify({ data: await getHash(buffer) }) : buffer
+      hash === "true"
+        ? JSON.stringify({
+            data: {
+              phash: await getHash(buffer),
+              norm_prev,
+              embedding: getTensor(tensor),
+            },
+          })
+        : buffer
     );
 });

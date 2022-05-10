@@ -12,11 +12,10 @@
   "type": "module",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@ffprobe-installer/ffprobe": "^1.4.1",
+    "@tensorflow-models/mobilenet": "^2.1.0",
+    "@tensorflow/tfjs": "^3.16.0",
+    "@tensorflow/tfjs-node": "^3.16.0",
     "fluent-ffmpeg": "^2.1.2",
-    "i": "^0.3.7",
-    "image-hash": "^5.3.1",
-    "imghash": "^0.0.9",
-    "npm": "^8.9.0"
+    "imghash": "^0.0.9"
   }
 }
