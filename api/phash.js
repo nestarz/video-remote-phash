@@ -22,7 +22,7 @@ const unzip = (readStream, cwd) =>
 
 const tryc = (fn, fb) => {
   try {
-    fn();
+    return fn();
   } catch (error) {
     return fb;
   }
