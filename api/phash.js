@@ -24,27 +24,37 @@ const unzip = (readStream, cwd) =>
         )
     );
 
-const version = "v2.0.11";
-const br = "nodejs14.x-tf2.8.6.br";
-const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
-const TFJS_PATH = join(tmpdir(), "tfjs-node");
-const isLambda = true; // Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
-console.log("goingImportTf");
-console.time("importTf");
-console.time("downloadTf");
-const tf = !isLambda
-  ? await import("@tensorflow/tfjs-node")
-  : await axios
-      .get(url, { responseType: "stream" })
-      .then(({ data: stream }) => unzip(stream, TFJS_PATH))
-      .then(() => console.timeEnd("downloadTf"))
-      .then(() => import(TFJS_PATH + "/index.js"));
-console.timeEnd("importTf");
-console.time("importTfModel");
-const model = await mobilenet.load(tf);
-console.timeEnd("importTfModel");
+const tfLoader = async () => {
+  const version = "v2.0.11";
+  const br = "nodejs14.x-tf2.8.6.br";
+  const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
+  const TFJS_PATH = join(tmpdir(), "tfjs-node");
+  const isLambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+  console.log("goingImportTf");
+  console.time("importTf");
+  console.time("downloadTf");
+  return !isLambda
+    ? import("@tensorflow/tfjs-node")
+    : axios
+        .get(url, { responseType: "stream" })
+        .then(({ data: stream }) => unzip(stream, TFJS_PATH))
+        .then(() => console.timeEnd("downloadTf"))
+        .then(() => import(TFJS_PATH + "/index.js"));
+};
+
+const createWarmer = (asyncFn) => {
+  let future;
+  let ok = false;
+  return (...args) => {
+    future = future ?? asyncFn(...args);
+    future.then(() => (ok = true));
+    if (ok) return future;
+    else throw Error("Warming...");
+  };
+};
+
 const getTensor = (t) => Array.from(t.dataSync());
-const computeDist = ((A) => (B) => {
+const computeDist = ((A) => (tf, B) => {
   const norm = A && B ? getTensor(tf.norm(tf.sub(B, A), 2, -1))[0] : null;
   A = B;
   return norm;
@@ -73,7 +83,12 @@ const catchHandle = (handler) => (req, res) =>
     )
   );
 
+const tfWarmer = createWarmer(tfLoader);
+const modelWarmer = createWarmer((tf) => mobilenet.load(tf));
 export default catchHandle(async (req, res) => {
+  const tf = await tfWarmer();
+  const model = await modelWarmer(tf);
+
   const { url: raw, hash = "false" } = req.query;
   if (!raw) throw Error("Missing video url");
   const url = encodeURI(decodeURIComponent(raw));
@@ -131,7 +146,7 @@ export default catchHandle(async (req, res) => {
   const tfimage = tf.node.decodeImage(buffer);
   const tensor = await model.infer(tfimage, true);
   console.timeEnd("embedding");
-  const norm_prev = computeDist(tensor);
+  const norm_prev = computeDist(tf, tensor);
 
   res
     .writeHead(200, {
@@ -144,7 +159,7 @@ export default catchHandle(async (req, res) => {
             data: {
               phash: await getHash(buffer),
               norm_prev,
-              embedding: getTensor(tensor),
+              embedding: getTensor(tf, tensor),
             },
           })
         : buffer
