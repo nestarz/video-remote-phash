@@ -64,6 +64,7 @@ export default catchHandle(async (req, res) => {
           "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
           isVideo &&
             `select='(gte(t,1))*(isnan(prev_selected_t)+gte(t-prev_selected_t,1))',tile=${N}x${N}`,
+          "scale=1024:1024"
         ]
           .filter((v) => v)
           .join(",")}`,
