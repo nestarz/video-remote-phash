@@ -20,13 +20,22 @@ const unzip = (readStream, cwd) =>
       .pipe(untar({ cwd }).on("finish", resolve).on("error", reject))
   );
 
+const tryc = (fn, fb) => {
+  try {
+    fn();
+  } catch (error) {
+    return fb;
+  }
+};
+
 const getAllFiles = (dirPath, arrayOfFiles = []) => {
-  fs.readdirSync(dirPath).forEach((file) => {
-    if (fs.statSync(dirPath + "/" + file).isDirectory())
-      arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+  const childs = tryc(() => fs.readdirSync(dirPath), []);
+  childs.forEach((file) => {
+    const isDir = tryc(() => fs.statSync(dirPath + "/" + file).isDirectory());
+    if (isDir) arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
     else arrayOfFiles.push(join(dirPath, "/", file));
   });
-  return arrayOfFiles.filter((v) => v.includes(".js"));
+  return [...new Set(arrayOfFiles.filter((v) => v.includes(".js")))];
 };
 
 const tfLoader = async () => {
