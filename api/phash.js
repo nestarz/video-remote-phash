@@ -53,10 +53,10 @@ const tfLoader = async () => {
             .then(({ data: stream }) => unzip(stream, TFJS_PATH))
         )
         .catch(() => null)
-        .then(() => {
-          throw Error(getAllFiles(TFJS_PATH));
-        })
-        .then(() => import(TFJS_PATH + "/index.js"));
+        .then(() => import(TFJS_PATH + "/index.js"))
+        .catch((err) => {
+          throw Error([err, getAllFiles(TFJS_PATH)]);
+        });
 };
 
 const createWarmer = (asyncFn) => {
