@@ -50,7 +50,7 @@ export default catchHandle(async (req, res) => {
         "-frames 1",
         `-vf ${[
           isVideo && !crop.includes("-") && `crop=${crop}`,
-          "crop=min(ih\\,iw):min(ih\\,iw),scale=50:50",
+          "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
           isVideo &&
             "select='(gte(t,2))*(isnan(prev_selected_t)+gte(t-prev_selected_t,2))',tile=5x5",
         ]
