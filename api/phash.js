@@ -9,6 +9,7 @@ import { pipeline } from "stream/promises";
 import { createReadStream, createWriteStream } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { fetch } from "undici";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
