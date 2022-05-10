@@ -8,7 +8,7 @@ import { createBrotliDecompress } from "zlib";
 import { join } from "path";
 import { tmpdir } from "os";
 import { x as untar } from "tar";
-import { mkdir } from "fs/promises";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import axios from "axios";
 import fs from "fs";
 
@@ -43,6 +43,10 @@ const tfLoader = async () => {
   const br = "nodejs14.x-tf2.8.6.br";
   const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
   const TFJS_PATH = join(tmpdir(), "tfjs-node");
+  const KERNEL = join(
+    TFJS_PATH,
+    "node_modules/@tensorflow/tfjs-node/dist/register_all_kernels.js"
+  );
   const isLambda = true; // Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
   return !isLambda
     ? import("@tensorflow/tfjs-node")
@@ -53,6 +57,13 @@ const tfLoader = async () => {
             .then(({ data: stream }) => unzip(stream, TFJS_PATH))
         )
         .catch(() => null)
+        .then(async () =>
+          writeFile(
+            KERNEL,
+            "throw Error(require('./kernels/_FusedMatMul.js'));" +
+              (await readFile(KERNEL, "utf-8"))
+          )
+        )
         .then(() => import(TFJS_PATH + "/index.js"))
         .catch((err) => {
           throw Error([err, getAllFiles(TFJS_PATH)]);
