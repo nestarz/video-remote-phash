@@ -13,8 +13,8 @@ import { fetch } from "undici";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-const version = "v2.0.22";
-const br = "nodejs14.x-tf3.16.0.br";
+const version = "v2.0.11";
+const br = "nodejs14.x-tf2.8.6.br";
 const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
 const filepath = join(tmpdir(), encodeURIComponent(version + br));
 // prettier-ignore
