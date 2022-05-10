@@ -21,8 +21,8 @@ const unzip = (readStream, cwd) =>
   );
 
 const tfLoader = async () => {
-  const version = "v2.0.11";
-  const br = "nodejs14.x-tf2.8.6.br";
+  const version = "v2.0.22";
+  const br = "nodejs14.x-tf3.16.0.br";
   const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
   const TFJS_PATH = join(tmpdir(), "tfjs-node");
   const KERNEL = join(
