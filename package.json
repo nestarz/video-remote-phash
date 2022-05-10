@@ -1,6 +1,9 @@
 {
-	"dependencies": {
-		"tfjs-node-lambda-helpers": "^1.1.7",
-		"axios": "^0.27.2"
-	}
+  "dependencies": {
+    "tfjs-node-lambda-helpers": "^1.1.7",
+    "axios": "^0.27.2"
+  },
+  "engines": {
+    "node": "12.x"
+  }
 }
