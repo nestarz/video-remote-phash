@@ -15,7 +15,7 @@ export default async (req, res) => {
   if (!lobe.done) {
     return res.status(lobe.value.statusCode).json(lobe.value);
   } else {
-    model ?? (model = lobe.value);
+    model || (model = lobe.value);
   }
   const imageUrl = encodeURI(decodeURIComponent(req.query.url));
 
