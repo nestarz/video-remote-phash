@@ -43,13 +43,13 @@ const tfLoader = async () => {
 };
 
 const createWarmer = (asyncFn) => {
-  let future;
+  let future, error;
   let ok = false;
   return (...args) => {
     future = future ?? asyncFn(...args);
-    future.then(() => (ok = true));
+    future.then(() => (ok = true)).catch((e) => (errorr = e));
     if (ok) return future;
-    else throw Error("Warming...");
+    else throw Error(error ?? "Warming...");
   };
 };
 
