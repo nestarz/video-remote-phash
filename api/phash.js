@@ -32,12 +32,16 @@ const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download
 const filepath = join(tmpdir(), encodeURIComponent(version + br));
 const TFJS_PATH = join(tmpdir(), "tfjs-node");
 const isLambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+console.time("importTf");
 const tf = !isLambda
   ? await import("@tensorflow/tfjs-node")
   : await pipeline((await fetch(url)).body, createWriteStream(filepath))
       .then(() => unzip(filepath, TFJS_PATH))
       .then(() => import(TFJS_PATH + "/index.js"));
+console.timeEnd("importTf");
+console.time("importTfModel");
 const model = await mobilenet.load(tf);
+console.timeEnd("importTfModel");
 const getTensor = (t) => Array.from(t.dataSync());
 const computeDist = ((A) => (B) => {
   const norm = A && B ? getTensor(tf.norm(tf.sub(B, A), 2, -1))[0] : null;
