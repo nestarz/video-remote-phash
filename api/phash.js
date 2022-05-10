@@ -4,23 +4,39 @@ import imghash from "imghash";
 import { PassThrough } from "stream";
 import { spawn } from "child_process";
 import * as mobilenet from "../mobilenet.js";
-import loadTf from "tfjs-node-lambda";
+import { createBrotliDecompress } from "zlib";
 import { pipeline } from "stream/promises";
 import { createReadStream, createWriteStream } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { fetch } from "undici";
+import { x as untar } from "tar";
+import { mkdir } from "fs/promises";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
+const unzip = (filepath, cwd) =>
+  mkdir(cwd)
+    .catch(() => null)
+    .then(
+      () =>
+        new Promise((resolve, reject) =>
+          createReadStream(filepath)
+            .pipe(createBrotliDecompress())
+            .pipe(untar({ cwd }).on("finish", resolve).on("error", reject))
+        )
+    );
 
 const version = "v2.0.11";
 const br = "nodejs14.x-tf2.8.6.br";
 const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
 const filepath = join(tmpdir(), encodeURIComponent(version + br));
-// prettier-ignore
-const tf = await pipeline((await fetch(url)).body, createWriteStream(filepath)).then(
-  () => loadTf(createReadStream(filepath))
-);
+const TFJS_PATH = join(tmpdir(), "tfjs-node");
+const isLambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+const tf = await pipeline((await fetch(url)).body, createWriteStream(filepath))
+  .then(() => unzip(filepath, TFJS_PATH))
+  .then(() =>
+    isLambda ? import(TFJS_PATH + "/index.js") : import("@tensorflow/tfjs-node")
+  );
 const model = await mobilenet.load(tf);
 const getTensor = (t) => Array.from(t.dataSync());
 const computeDist = ((A) => (B) => {

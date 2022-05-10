@@ -14,7 +14,9 @@
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "imghash": "^0.0.9",
+    "tar": "^6.1.11",
     "tfjs-node-lambda": "^2.0.22",
-    "undici": "^5.1.1"
+    "undici": "^5.1.1",
+    "zlib": "^1.0.5"
   }
 }
