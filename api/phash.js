@@ -20,24 +20,6 @@ const unzip = (readStream, cwd) =>
       .pipe(untar({ cwd }).on("finish", resolve).on("error", reject))
   );
 
-const tryc = (fn, fb) => {
-  try {
-    return fn();
-  } catch (error) {
-    return fb;
-  }
-};
-
-const getAllFiles = (dirPath, arrayOfFiles = []) => {
-  const childs = tryc(() => fs.readdirSync(dirPath), []);
-  childs.forEach((file) => {
-    const isDir = tryc(() => fs.statSync(dirPath + "/" + file).isDirectory());
-    if (isDir) arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
-    else arrayOfFiles.push(join(dirPath, "/", file));
-  });
-  return [...new Set(arrayOfFiles.filter((v) => v.includes(".js")))];
-};
-
 const tfLoader = async () => {
   const version = "v2.0.11";
   const br = "nodejs14.x-tf2.8.6.br";
@@ -60,11 +42,46 @@ const tfLoader = async () => {
         .then(async () =>
           writeFile(
             KERNEL,
-            "throw Error(JSON.stringify(require('./kernels/_FusedMatMul.js')));" +
-              (await readFile(KERNEL, "utf-8"))
+            `(${(() => {
+              const fs = require("fs");
+              const path = require("path");
+              const tryc = (fn, fb) => {
+                try {
+                  return fn();
+                } catch (error) {
+                  return fb;
+                }
+              };
+
+              const getAllFiles = (dirPath, arrayOfFiles = []) => {
+                const childs = tryc(() => fs.readdirSync(dirPath), []);
+                childs.forEach((file) => {
+                  const isDir = tryc(() =>
+                    fs.statSync(dirPath + "/" + file).isDirectory()
+                  );
+                  if (isDir)
+                    arrayOfFiles = getAllFiles(
+                      dirPath + "/" + file,
+                      arrayOfFiles
+                    );
+                  else arrayOfFiles.push(path.join(dirPath, "/", file));
+                });
+                return [
+                  ...new Set(arrayOfFiles.filter((v) => v.includes(".js"))),
+                ];
+              };
+
+              throw Error(
+                JSON.stringify({
+                  __dirname,
+                  __filename,
+                  childs: getAllFiles(__dirname),
+                })
+              );
+            }).toString()})();` + (await readFile(KERNEL, "utf-8"))
           )
         )
-        .then(() => import(TFJS_PATH + "/index.js"));
+        .then(() => console.log(KERNEL) ?? import(TFJS_PATH + "/index.js"));
 };
 
 const createWarmer = (asyncFn) => {
