@@ -5,22 +5,20 @@ import { PassThrough } from "stream";
 import { spawn } from "child_process";
 import * as mobilenet from "../mobilenet.js";
 import { createBrotliDecompress } from "zlib";
-import { pipeline } from "stream/promises";
-import { createReadStream, createWriteStream } from "fs";
-import { join, resolve } from "path";
+import { join } from "path";
 import { tmpdir } from "os";
-import { fetch } from "undici";
 import { x as untar } from "tar";
 import { mkdir } from "fs/promises";
+import axios from "axios";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
-const unzip = (filepath, cwd) =>
+const unzip = (readStream, cwd) =>
   mkdir(cwd)
     .catch(() => null)
     .then(
       () =>
         new Promise((resolve, reject) =>
-          createReadStream(filepath)
+          readStream
             .pipe(createBrotliDecompress())
             .pipe(untar({ cwd }).on("finish", resolve).on("error", reject))
         )
@@ -29,15 +27,17 @@ const unzip = (filepath, cwd) =>
 const version = "v2.0.11";
 const br = "nodejs14.x-tf2.8.6.br";
 const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
-const filepath = resolve(br); // join(tmpdir(), encodeURIComponent(version + br));
 const TFJS_PATH = join(tmpdir(), "tfjs-node");
-const isLambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+const isLambda = true; // Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
 console.log("goingImportTf");
 console.time("importTf");
+console.time("downloadTf");
 const tf = !isLambda
   ? await import("@tensorflow/tfjs-node")
-  : await Promise.resolve() //pipeline((await fetch(url)).body, createWriteStream(filepath))
-      .then(() => unzip(filepath, TFJS_PATH))
+  : await axios
+      .get(url, { responseType: "stream" })
+      .then(({ data: stream }) => unzip(stream, TFJS_PATH))
+      .then(() => console.timeEnd("downloadTf"))
       .then(() => import(TFJS_PATH + "/index.js"));
 console.timeEnd("importTf");
 console.time("importTfModel");

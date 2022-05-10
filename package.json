@@ -12,6 +12,7 @@
   "type": "module",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "axios": "^0.27.2",
     "fluent-ffmpeg": "^2.1.2",
     "imghash": "^0.0.9",
     "tar": "^6.1.11",
