@@ -2,7 +2,6 @@ lockfileVersion: 5.4
 
 specifiers:
   '@ffmpeg-installer/ffmpeg': ^1.1.0
-  '@tensorflow-models/mobilenet': ^2.1.0
   fluent-ffmpeg: ^2.1.2
   imghash: ^0.0.9
   tfjs-node-lambda: ^2.0.22
@@ -10,7 +9,6 @@ specifiers:
 
 dependencies:
   '@ffmpeg-installer/ffmpeg': 1.1.0
-  '@tensorflow-models/mobilenet': 2.1.0
   fluent-ffmpeg: 2.1.2
   imghash: 0.0.9
   tfjs-node-lambda: 2.0.22
@@ -144,13 +142,6 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
-
-  /@tensorflow-models/mobilenet/2.1.0:
-    resolution: {integrity: sha512-JjqT9ijHDFA2FEpUGWg7H2lQ0GrMuE2VmiCRBYmUew6b4JKht8LXDjG5HxZh95YH6c/25sZWTpGeHbquloH+hw==}
-    peerDependencies:
-      '@tensorflow/tfjs-converter': ^3.1.0
-      '@tensorflow/tfjs-core': ^3.1.0
-    dev: false
 
   /@tensorflow/tfjs-backend-cpu/2.8.6_wxzc7bbxm4qjslj5nxhcierwty:
     resolution: {integrity: sha512-x9WTTE9p3Pon2D0d6HH1UCIJsU1w3v9sF3vxJcp+YStrjDefWoW5pwxHCckEKTRra7GWg3CwMKK3Si2dat4H1A==}

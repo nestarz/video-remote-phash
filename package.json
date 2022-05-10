@@ -12,7 +12,6 @@
   "type": "module",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@tensorflow-models/mobilenet": "^2.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "imghash": "^0.0.9",
     "tfjs-node-lambda": "^2.0.22",

@@ -3,7 +3,7 @@ import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 import imghash from "imghash";
 import { PassThrough } from "stream";
 import { spawn } from "child_process";
-import mobilenet from "@tensorflow-models/mobilenet";
+import * as mobilenet from "../mobilenet.js";
 import loadTf from "tfjs-node-lambda";
 import { pipeline } from "stream/promises";
 import { createReadStream, createWriteStream } from "fs";
@@ -21,7 +21,7 @@ const filepath = join(tmpdir(), encodeURIComponent(version + br));
 const tf = await pipeline((await fetch(url)).body, createWriteStream(filepath)).then(
   () => loadTf(createReadStream(filepath))
 );
-const model = await mobilenet.load();
+const model = await mobilenet.load(tf);
 const getTensor = (t) => Array.from(t.dataSync());
 const computeDist = ((A) => (B) => {
   const norm = A && B ? getTensor(tf.norm(tf.sub(B, A), 2, -1))[0] : null;
