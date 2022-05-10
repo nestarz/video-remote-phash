@@ -13,32 +13,27 @@ import axios from "axios";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 const unzip = (readStream, cwd) =>
-  mkdir(cwd)
-    .catch(() => null)
-    .then(
-      () =>
-        new Promise((resolve, reject) =>
-          readStream
-            .pipe(createBrotliDecompress())
-            .pipe(untar({ cwd }).on("finish", resolve).on("error", reject))
-        )
-    );
+  new Promise((resolve, reject) =>
+    readStream
+      .pipe(createBrotliDecompress())
+      .pipe(untar({ cwd }).on("finish", resolve).on("error", reject))
+  );
 
 const tfLoader = async () => {
   const version = "v2.0.11";
   const br = "nodejs14.x-tf2.8.6.br";
   const url = `https://github.com/jlarmstrongiv/tfjs-node-lambda/releases/download/${version}/${br}`;
   const TFJS_PATH = join(tmpdir(), "tfjs-node");
-  const isLambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
-  console.log("goingImportTf");
-  console.time("importTf");
-  console.time("downloadTf");
+  const isLambda = true;// Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
   return !isLambda
     ? import("@tensorflow/tfjs-node")
-    : axios
-        .get(url, { responseType: "stream" })
-        .then(({ data: stream }) => unzip(stream, TFJS_PATH))
-        .then(() => console.timeEnd("downloadTf"))
+    : mkdir(TFJS_PATH)
+        .then(() =>
+          axios
+            .get(url, { responseType: "stream" })
+            .then(({ data: stream }) => unzip(stream, TFJS_PATH))
+        )
+        .catch(() => null)
         .then(() => import(TFJS_PATH + "/index.js"));
 };
 
@@ -47,9 +42,9 @@ const createWarmer = (asyncFn) => {
   let ok = false;
   return (...args) => {
     future = future ?? asyncFn(...args);
-    future.then(() => (ok = true)).catch((e) => (errorr = e));
-    if (ok) return future;
-    else throw Error(error ?? "Warming...");
+    future.then(() => (ok = true)).catch((e) => (error = e));
+    if (!error) return future;
+    else throw Error(error);
   };
 };
 
@@ -86,8 +81,13 @@ const catchHandle = (handler) => (req, res) =>
 const tfWarmer = createWarmer(tfLoader);
 const modelWarmer = createWarmer((tf) => mobilenet.load(tf));
 export default catchHandle(async (req, res) => {
+  console.log("goingImportTf");
+  console.time("tf");
   const tf = await tfWarmer();
+  console.timeEnd("tf");
+  console.time("model");
   const model = await modelWarmer(tf);
+  console.timeEnd("model");
 
   const { url: raw, hash = "false" } = req.query;
   if (!raw) throw Error("Missing video url");
