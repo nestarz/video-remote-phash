@@ -3,6 +3,7 @@ import { resolve } from "path";
 import fetch from "node-fetch";
 import sharp from "sharp";
 import { readFile } from "fs/promises";
+import { fileTypeFromStream } from "file-type";
 
 const getModel = async (modelPath) => {
   const interpreter = new Interpreter(await readFile(modelPath));
@@ -22,17 +23,16 @@ const getModel = async (modelPath) => {
 const run = async (req, res) => {
   const { url: raw } = req.query;
   if (!raw) throw Error("Missing video url");
-  const url = encodeURI(decodeURIComponent(raw));
+  const url = encodeURI(decodeURIComponent(decodeURIComponent(raw)));
   const model = await getModel(resolve("static/mobilenet_v2_1.0_224.tflite"));
-  const buffer = await fetch(url)
-    .then((res) =>
-      res.headers?.get("content-type")?.includes("image/")
-        ? res
-        : fetch(new URL(`/api/tile?url=${raw}`, `https://${req.headers.host}`))
-    )
-    .then(({ body }) =>
-      body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
-    );
+  const mime = (await fileTypeFromStream((await fetch(url)).body)).mime;
+
+  const buffer = await (mime.includes("video")
+    ? fetch(new URL(`/api/tile?url=${raw}`, `https://${req.headers.host}`))
+    : fetch(url)
+  ).then(({ body }) =>
+    body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
+  );
   const tensor = await model.infer(buffer);
   res
     .writeHead(200, {

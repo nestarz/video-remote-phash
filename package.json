@@ -2,6 +2,7 @@
   "type": "module",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "file-type": "^17.1.1",
     "fluent-ffmpeg": "^2.1.2",
     "node-fetch": "^3.2.4",
     "node-tflite": "^0.0.2",
@@ -11,6 +12,6 @@
     "node": "14.x"
   },
   "scripts": {
-    "postinstall": "cp ./static/libtensorflowlite_c.so ./node_modules/node-tflite/build/Release/libtensorflowlite_c.so"
+    "postinstall": "cp ./static/libtensorflowlite_c.so ./node_modules/node-tflite/build/Release/libtensorflowlite_c.so || true"
   }
 }

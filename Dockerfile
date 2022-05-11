@@ -19,4 +19,4 @@ RUN cp /var/task/tflite_build/libtensorflowlite_c.so /var/task/tflite_build/node
 
 COPY api ./api/
 COPY static ./static/
-RUN node api/phash.js
+RUN node api/embedder.js
