@@ -27,8 +27,13 @@ const run = async (req, res) => {
   const buffer = await fetch(url).then(({ body }) =>
     body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
   );
-  const pred = await model.infer(buffer);
-  res.end(JSON.stringify(pred));
+  const tensor = await model.infer(buffer);
+  res
+    .writeHead(200, {
+      "Content-Type": "application/json",
+      "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
+    })
+    .end(JSON.stringify({ data: { tensor } }));
 };
 
 export default run;
