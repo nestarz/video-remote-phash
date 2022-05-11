@@ -24,9 +24,15 @@ const run = async (req, res) => {
   if (!raw) throw Error("Missing video url");
   const url = encodeURI(decodeURIComponent(raw));
   const model = await getModel(resolve("static/mobilenet_v2_1.0_224.tflite"));
-  const buffer = await fetch(url).then(({ body }) =>
-    body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
-  );
+  const buffer = await fetch(url)
+    .then((res) =>
+      res.headers?.get("content-type")?.includes("image/")
+        ? res
+        : fetch(new URL(`/api/tile?url=${raw}`, `//${req.headers.host}`))
+    )
+    .then(({ body }) =>
+      body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
+    );
   const tensor = await model.infer(buffer);
   res
     .writeHead(200, {
