@@ -1,56 +1,34 @@
 import { Interpreter } from "node-tflite";
-import fs from "fs";
-import path from "path";
-import { createCanvas, loadImage } from "canvas";
-import axios from "axios";
+import { resolve } from "path";
+import fetch from "node-fetch";
+import sharp from "sharp";
+import { readFile } from "fs/promises";
 
-const modelPath = path.resolve(
-  __dirname,
-  "..",
-  "static",
-  "mobilenet_v1_1.0_224_quant.tflite"
-);
+const getModel = async (modelPath) => {
+  const interpreter = new Interpreter(await readFile(modelPath));
 
-function createInterpreter() {
-  const modelData = fs.readFileSync(modelPath);
-  return new Interpreter(modelData);
-}
-
-async function getImageInput(arrayBuffer, size) {
-  const canvas = createCanvas(size, size);
-  const context = canvas.getContext("2d");
-  const image = await loadImage(arrayBuffer);
-  context.drawImage(image, 0, 0, size, size);
-  const data = context.getImageData(0, 0, size, size);
-
-  const inputData = new Uint8Array(size * size * 3);
-
-  for (let i = 0; i < size * size; ++i) {
-    inputData[i * 3] = data.data[i * 4];
-    inputData[i * 3 + 1] = data.data[i * 4 + 1];
-    inputData[i * 3 + 2] = data.data[i * 4 + 2];
-  }
-
-  return inputData;
-}
-
-export default async (req, res) => {
-  const interpreter = createInterpreter();
-  interpreter.allocateTensors();
-
-  const imageUrl = encodeURI(decodeURIComponent(req.query.url));
-  const { data } = await axios.get(imageUrl, {
-    responseType: "arraybuffer",
-  });
-  const inputData = await getImageInput(data, 224);
-  interpreter.inputs[0].copyFrom(inputData);
-
-  interpreter.invoke();
-
-  const outputData = new Uint8Array(1001);
-  interpreter.outputs[0].copyTo(outputData);
-
-  const maxIndex = outputData.indexOf(Math.max(...Array.from(outputData)));
-
-  res.end(JSON.stringify(maxIndex));
+  return {
+    infer: async (buffer) => {
+      interpreter.allocateTensors();
+      interpreter.inputs[0].copyFrom(new Float32Array(buffer));
+      interpreter.invoke();
+      const outputData = new Float32Array(1001);
+      interpreter.outputs[0].copyTo(outputData);
+      return Array.from(outputData);
+    },
+  };
 };
+
+const run = async (req, res) => {
+  const { url: raw } = req.query;
+  if (!raw) throw Error("Missing video url");
+  const url = encodeURI(decodeURIComponent(raw));
+  const model = await getModel(resolve("static/mobilenet_v2_1.0_224.tflite"));
+  const buffer = await fetch(url).then(({ body }) =>
+    body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
+  );
+  const pred = await model.infer(buffer);
+  res.end(JSON.stringify(pred));
+};
+
+export default run;
