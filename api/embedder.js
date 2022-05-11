@@ -28,7 +28,7 @@ const run = async (req, res) => {
     .then((res) =>
       res.headers?.get("content-type")?.includes("image/")
         ? res
-        : fetch(new URL(`/api/tile?url=${raw}`, `//${req.headers.host}`))
+        : fetch(new URL(`/api/tile?url=${raw}`, `https://${req.headers.host}`))
     )
     .then(({ body }) =>
       body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
