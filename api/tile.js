@@ -55,7 +55,7 @@ export default async (req, res) => {
 
   console.time("ffmpeg");
 
-  const k0 = 50;
+  const k0 = 10;
   const I = duration / k0;
   const N = Math.round(Math.sqrt(k0));
   const K = N * N;
