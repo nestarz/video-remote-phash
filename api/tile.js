@@ -18,12 +18,21 @@ const exec = async (cmd, args, onData) => {
   });
 };
 
+const range = (N) => [...Array(N).keys()];
+const outer = ([v1, v2]) => v1.map((x) => v2.map((y) => `${x}_${y}`));
+const tile = (N, fn) =>
+  range(N).map((i, _, arr) => arr.slice(0, i).map(fn).join("+") || 0);
+const layout = (N) =>
+  outer([tile(N, (k) => `w${k * N}`), tile(N, (k) => `h${k}`)])
+    .flat()
+    .join("|");
+
 export default async (req, res) => {
   const { url: raw } = req.query;
   if (!raw) throw Error("Missing video url");
   const url = encodeURI(decodeURIComponent(raw));
 
-  console.time("ffmpeg");
+  console.time("crop");
   const { duration, crop } = await exec(
     ffmpegPath,
     [
@@ -42,37 +51,38 @@ export default async (req, res) => {
       if (data.crop && data.duration) res();
     }
   );
+  console.timeEnd("crop");
 
+  console.time("ffmpeg");
   const buffer = await new Promise((res) => {
     const stream = PassThrough();
     const buffers = [];
     stream.on("data", (buf) => buffers.push(buf));
     stream.on("end", () => res(Buffer.concat(buffers)));
-    const isVideo = duration > 0;
-    const K = 50;
-    const I = duration / K;
-    const N = Math.round(Math.sqrt(K));
-    console.log(I, duration);
-    ffmpeg(url)
+    const k0 = 100;
+    const I = duration / k0;
+    const N = Math.round(Math.sqrt(k0));
+    const K = N * N;
+
+    ffmpeg()
       .outputOptions([
-        `-vf ${[
-          crop && !crop.includes("-") && `crop=${crop}`,
-          "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
-          isVideo &&
-            `select='(gte(t\,${I}))*(isnan(prev_selected_t)+gte(t-prev_selected_t\,${I}))',tile=${N}x${N}`,
-          `scale=1024:1024`,
-        ]
-          .filter((v) => v)
-          .join(",")}`,
+        ...range(K).flatMap((k) => [
+          "-noaccurate_seek",
+          `-ss ${k * I}`,
+          `-i ${url}`,
+        ]),
         "-frames:v 1",
+        `-filter_complex ${range(K)
+          .map((k) => `[${k}:v]`)
+          .join("")}xstack=inputs=${K}:layout=${layout(N)}`,
         "-vcodec png",
         "-f rawvideo",
       ])
+      .on("start", console.log)
       .on("error", console.error)
       .pipe(stream, { end: true });
   });
   console.timeEnd("ffmpeg");
-
   res
     .writeHead(200, {
       "Content-Type": "image/png",
