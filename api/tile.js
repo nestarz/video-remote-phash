@@ -83,6 +83,7 @@ export default async (req, res) => {
       res.writeHead(200, {
         "Content-Type": "image/png",
         "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
-      })
+      }),
+      { end: true }
     );
 };
