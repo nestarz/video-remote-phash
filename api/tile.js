@@ -1,6 +1,5 @@
 import ffmpeg from "fluent-ffmpeg";
 import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
-import { PassThrough } from "stream";
 import { spawn } from "child_process";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -54,44 +53,36 @@ export default async (req, res) => {
   console.timeEnd("crop");
 
   console.time("ffmpeg");
-  const buffer = await new Promise((res) => {
-    const stream = PassThrough();
-    const buffers = [];
-    stream.on("data", (buf) => buffers.push(buf));
-    stream.on("end", () => res(Buffer.concat(buffers)));
-    const k0 = 100;
-    const I = duration / k0;
-    const N = Math.round(Math.sqrt(k0));
-    const K = N * N;
 
-    ffmpeg()
-      .outputOptions([
-        ...range(K).flatMap((k) => [
-          "-noaccurate_seek",
-          `-ss ${k * I}`,
-          `-i ${url}`,
-        ]),
-        "-frames:v 1",
-        `-filter_complex ${range(K)
-          .map(
-            (k) => `[${k}:v]crop=min(ih\\,iw):min(ih\\,iw),scale=144:144[v${k}]`
-          )
-          .join(";")};${range(K)
-          .map((k) => `[v${k}]`)
-          .join("")}xstack=inputs=${K}:layout=${layout(N)},scale=1024:1024`,
-        "-vcodec png",
-        "-preset ultrafast",
-        "-f rawvideo",
-      ])
-      .on("start", console.log)
-      .on("error", console.error)
-      .pipe(stream, { end: true });
-  });
-  console.timeEnd("ffmpeg");
-  res
-    .writeHead(200, {
-      "Content-Type": "image/png",
-      "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
-    })
-    .end(buffer);
+  const k0 = 4;
+  const I = duration / k0;
+  const N = Math.round(Math.sqrt(k0));
+  const K = N * N;
+
+  ffmpeg()
+    .outputOptions([
+      ...range(K).flatMap((k) => [
+        `-ss ${k * I}`,
+        "-noaccurate_seek",
+        `-i ${url}`,
+      ]),
+      "-frames:v 1",
+      `-filter_complex ${range(K)
+        .map(
+          (k) => `[${k}:v]crop=min(ih\\,iw):min(ih\\,iw),scale=144:144[v${k}]`
+        )
+        .join(";")};${range(K)
+        .map((k) => `[v${k}]`)
+        .join("")}xstack=inputs=${K}:layout=${layout(N)},scale=1024:1024`,
+      "-vcodec png",
+      "-f rawvideo",
+    ])
+    .on("start", console.log)
+    .on("error", console.error)
+    .pipe(
+      res.writeHead(200, {
+        "Content-Type": "image/png",
+        "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
+      })
+    );
 };
