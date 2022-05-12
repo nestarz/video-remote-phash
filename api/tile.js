@@ -58,7 +58,7 @@ export default async (req, res) => {
           crop && !crop.includes("-") && `crop=${crop}`,
           "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
           isVideo &&
-            `select='(gte(t\,${I}))*(isnan(prev_selected_t)+gte(t-prev_selected_t\,${I}))',tile=${N}x${N}`,
+            `select='(isnan(prev_selected_t)+gte(t-prev_selected_t,1))',tile=${N}x${N}`,
         ]
           .filter((v) => v)
           .join(",")}`,
