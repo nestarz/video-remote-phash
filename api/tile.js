@@ -17,6 +17,7 @@ const exec = async (cmd, args, onData) => {
   });
 };
 
+const transpose = (m) => m[0].map((_, i) => m.map((x) => x[i]));
 const range = (N) => [...Array(N).keys()];
 const outer = ([v1, v2]) => v1.map((x) => v2.map((y) => `${x}_${y}`));
 const tile = (N, fn) =>
@@ -42,7 +43,7 @@ export default async (req, res) => {
       `-vsync vfr -f null pipe:1`,
     ].flatMap((d) => (d[0] === "-" ? d.split(" ") : d)),
     (data, res) => (s) => {
-      data.crop = /.*crop=(.*?)($|\n| ).*/.exec(s)?.[1] ?? data.crop;
+      data.crop = /.*(crop=.*?)($|\n| ).*/.exec(s)?.[1] ?? data.crop;
       data.duration =
         apply(/.*Duration:[\n\r\s]+(.*?),.*/.exec(s)?.[1], (v) =>
           v ? +v?.split(":")?.reduce((acc, time) => 60 * acc + +time) : v
@@ -54,10 +55,11 @@ export default async (req, res) => {
 
   console.time("ffmpeg");
 
-  const k0 = 4;
+  const k0 = 50;
   const I = duration / k0;
   const N = Math.round(Math.sqrt(k0));
   const K = N * N;
+  const p = [crop, "crop=min(ih\\,iw):min(ih\\,iw)", "scale=144:144"].join(",");
 
   ffmpeg()
     .outputOptions([
@@ -68,9 +70,7 @@ export default async (req, res) => {
       ]),
       "-frames:v 1",
       `-filter_complex ${range(K)
-        .map(
-          (k) => `[${k}:v]crop=min(ih\\,iw):min(ih\\,iw),scale=144:144[v${k}]`
-        )
+        .map((k) => `[${k}:v]${p}[v${k}]`)
         .join(";")};${range(K)
         .map((k) => `[v${k}]`)
         .join("")}xstack=inputs=${K}:layout=${layout(N)},scale=1024:1024`,
