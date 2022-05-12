@@ -73,9 +73,14 @@ export default async (req, res) => {
         ]),
         "-frames:v 1",
         `-filter_complex ${range(K)
-          .map((k) => `[${k}:v]`)
-          .join("")}xstack=inputs=${K}:layout=${layout(N)}`,
+          .map(
+            (k) => `[${k}:v]crop=min(ih\\,iw):min(ih\\,iw),scale=144:144[v${k}]`
+          )
+          .join(";")};${range(K)
+          .map((k) => `[v${k}]`)
+          .join("")}xstack=inputs=${K}:layout=${layout(N)},scale=1024:1024`,
         "-vcodec png",
+        "-preset ultrafast",
         "-f rawvideo",
       ])
       .on("start", console.log)
