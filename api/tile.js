@@ -61,7 +61,9 @@ export default async (req, res) => {
   const I = duration / k0;
   const N = Math.round(Math.sqrt(k0));
   const K = N * N;
-  const p = [crop, "crop=min(ih\\,iw):min(ih\\,iw)", "scale=144:144"].join(",");
+  const p = [crop, "crop=min(ih\\,iw):min(ih\\,iw)", "scale=144:144"]
+    .filter((v) => v)
+    .join(",");
 
   console.time("ffmpeg");
   const file = join(tmpdir(), "test.png");
