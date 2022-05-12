@@ -61,6 +61,11 @@ export default async (req, res) => {
   const K = N * N;
   const p = [crop, "crop=min(ih\\,iw):min(ih\\,iw)", "scale=144:144"].join(",");
 
+  res.writeHead(200, {
+    "Content-Type": "image/png",
+    "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
+  });
+
   ffmpeg()
     .outputOptions([
       ...range(K).flatMap((k) => [
@@ -81,11 +86,5 @@ export default async (req, res) => {
     .on("error", (err) => {
       throw Error(err);
     })
-    .pipe(
-      res.writeHead(200, {
-        "Content-Type": "image/png",
-        "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
-      }),
-      { end: true }
-    );
+    .pipe(res, { end: true });
 };
