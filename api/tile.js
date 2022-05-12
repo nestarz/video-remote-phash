@@ -75,6 +75,7 @@ export default async (req, res) => {
 
     ffmpeg()
       .outputOptions([
+        "-threads 1",
         ...range(K).flatMap((k) => [
           `-ss ${k * I}`,
           "-noaccurate_seek",
