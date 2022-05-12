@@ -89,6 +89,8 @@ export default async (req, res) => {
   });
   console.timeEnd("ffmpeg");
 
+  console.log(Buffer.byteLength(buffer));
+
   res
     .writeHead(200, {
       "Content-Type": "image/png",
