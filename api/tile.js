@@ -2,6 +2,9 @@ import ffmpeg from "fluent-ffmpeg";
 import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 import { PassThrough } from "stream";
 import { spawn } from "child_process";
+import { join } from "path";
+import { tmpdir } from "os";
+import { createReadStream } from "fs";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -61,6 +64,7 @@ export default async (req, res) => {
   const p = [crop, "crop=min(ih\\,iw):min(ih\\,iw)", "scale=144:144"].join(",");
 
   console.time("ffmpeg");
+  const file = join(tmpdir(), "test.png");
   const buffer = await new Promise((res, rej) => {
     const stream = PassThrough();
     const buffers = [];
@@ -85,14 +89,14 @@ export default async (req, res) => {
       ])
       .on("start", console.log)
       .on("error", rej)
-      .pipe(stream, { end: true });
+      .on("end", res)
+      .save(file);
   });
   console.timeEnd("ffmpeg");
 
-  res
-    .writeHead(200, {
-      "Content-Type": "image/png",
-      "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
-    })
-    .end(buffer);
+  res.writeHead(200, {
+    "Content-Type": "image/png",
+    "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
+  });
+  createReadStream(file).pipe(res);
 };
