@@ -78,7 +78,9 @@ export default async (req, res) => {
       "-f rawvideo",
     ])
     .on("start", console.log)
-    .on("error", console.error)
+    .on("error", (err) => {
+      throw Error(err);
+    })
     .pipe(
       res.writeHead(200, {
         "Content-Type": "image/png",
