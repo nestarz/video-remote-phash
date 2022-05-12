@@ -1,6 +1,7 @@
 import ffmpeg from "fluent-ffmpeg";
 import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 import { spawn } from "child_process";
+import { PassThrough } from "stream";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
