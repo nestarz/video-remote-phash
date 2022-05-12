@@ -29,9 +29,9 @@ export default async (req, res) => {
     [
       "-ss 3",
       `-i ${url}`,
-      "-t 3",
+      "-t 5",
       "-vf",
-      "select='isnan(prev_selected_t)+gte(t-prev_selected_t,1)',format=gbrp,tblend=all_mode=difference,curves=all='0/0 0.3/1 1/1',cropdetect",
+      "select='isnan(prev_selected_t)+gte(t-prev_selected_t,1)',format=gbrp,tblend=all_mode=difference,curves=all='0/0 0.35/1 1/1',cropdetect",
       `-vsync vfr -f null pipe:1`,
     ].flatMap((d) => (d[0] === "-" ? d.split(" ") : d)),
     (data, res) => (s) => {
@@ -52,15 +52,15 @@ export default async (req, res) => {
     const isVideo = duration > 0;
     const K = 50;
     const maxDuration = Math.min(duration, 120);
-    const I = maxDuration / K;
     const N = Math.round(Math.sqrt(K));
+    const I = maxDuration / K / 1.05;
     ffmpeg(url)
       .outputOptions([
         `-vf ${[
           crop && !crop.includes("-") && `crop=${crop}`,
           "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
           isVideo &&
-            `select='(gte(t\,${I}))*(isnan(prev_selected_t)+gte(t-prev_selected_t\,${I}))',tile=${N}x${N}`,
+            `select='(isnan(prev_selected_t)+gte(t-prev_selected_t\,${I}))',tile=${N}x${N}`,
           `scale=1024:1024`,
         ]
           .filter((v) => v)
