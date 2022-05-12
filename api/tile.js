@@ -54,37 +54,44 @@ export default async (req, res) => {
   console.timeEnd("crop");
 
   console.time("ffmpeg");
-
   const k0 = 10;
   const I = duration / k0;
   const N = Math.round(Math.sqrt(k0));
   const K = N * N;
   const p = [crop, "crop=min(ih\\,iw):min(ih\\,iw)", "scale=144:144"].join(",");
 
-  res.writeHead(200, {
-    "Content-Type": "image/png",
-    "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
-  });
+  const buffer = await new Promise((res, rej) => {
+    const stream = PassThrough();
+    const buffers = [];
+    stream.on("data", (buf) => buffers.push(buf));
+    stream.on("end", () => res(Buffer.concat(buffers)));
 
-  ffmpeg()
-    .outputOptions([
-      ...range(K).flatMap((k) => [
-        `-ss ${k * I}`,
-        "-noaccurate_seek",
-        `-i ${url}`,
-      ]),
-      "-frames:v 1",
-      `-filter_complex ${range(K)
-        .map((k) => `[${k}:v]${p}[v${k}]`)
-        .join(";")};${range(K)
-        .map((k) => `[v${k}]`)
-        .join("")}xstack=inputs=${K}:layout=${layout(N)},scale=1024:1024`,
-      "-vcodec png",
-      "-f rawvideo",
-    ])
-    .on("start", console.log)
-    .on("error", (err) => {
-      throw Error(err);
+    ffmpeg()
+      .outputOptions([
+        ...range(K).flatMap((k) => [
+          `-ss ${k * I}`,
+          "-noaccurate_seek",
+          `-i ${url}`,
+        ]),
+        "-frames:v 1",
+        `-filter_complex ${range(K)
+          .map((k) => `[${k}:v]${p}[v${k}]`)
+          .join(";")};${range(K)
+          .map((k) => `[v${k}]`)
+          .join("")}xstack=inputs=${K}:layout=${layout(N)},scale=1024:1024`,
+        "-vcodec png",
+        "-f rawvideo",
+      ])
+      .on("start", console.log)
+      .on("error", rej)
+      .pipe(stream, { end: true });
+  });
+  console.timeEnd("ffmpeg");
+
+  res
+    .writeHead(200, {
+      "Content-Type": "image/png",
+      "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
     })
-    .pipe(res, { end: true });
+    .end(buffer);
 };
