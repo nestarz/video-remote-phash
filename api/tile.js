@@ -23,6 +23,7 @@ export default async (req, res) => {
   if (!raw) throw Error("Missing video url");
   const url = encodeURI(decodeURIComponent(raw));
 
+  console.time("ffmpeg");
   const { duration, crop } = await exec(
     ffmpegPath,
     [
@@ -48,14 +49,17 @@ export default async (req, res) => {
     stream.on("data", (buf) => buffers.push(buf));
     stream.on("end", () => res(Buffer.concat(buffers)));
     const isVideo = duration > 0;
-    const N = Math.round(Math.sqrt(Math.floor(duration)));
+    const K = 50;
+    const I = duration / K;
+    const N = Math.round(Math.sqrt(K));
+    console.log(I, duration);
     ffmpeg(url)
       .outputOptions([
         `-vf ${[
           crop && !crop.includes("-") && `crop=${crop}`,
           "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
           isVideo &&
-            `select='(isnan(prev_selected_t)+gte(t-prev_selected_t,1))',tile=${N}x${N}`,
+            `select='(gte(t\,${I}))*(isnan(prev_selected_t)+gte(t-prev_selected_t\,${I}))',tile=${N}x${N}`,
           `scale=1024:1024`,
         ]
           .filter((v) => v)
@@ -67,6 +71,7 @@ export default async (req, res) => {
       .on("error", console.error)
       .pipe(stream, { end: true });
   });
+  console.timeEnd("ffmpeg");
 
   res
     .writeHead(200, {

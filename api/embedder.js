@@ -26,9 +26,11 @@ const run = async (req, res) => {
   const url = encodeURI(decodeURIComponent(decodeURIComponent(raw)));
   const model = await getModel(resolve("static/mobilenet_v2_1.0_224.tflite"));
   const mime = (await fileTypeFromStream((await fetch(url)).body)).mime;
+  const loc = req.headers.host.includes("0.0.");
+  const tileUrl = loc ? "http://localhost:3000" : `https://${req.headers.host}`;
 
   const buffer = await (mime.includes("video")
-    ? fetch(new URL(`/api/tile?url=${raw}`, `https://${req.headers.host}`))
+    ? fetch(new URL(`/api/tile?url=${raw}`, tileUrl))
     : fetch(url)
   ).then(({ body }) =>
     body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
