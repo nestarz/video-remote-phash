@@ -13,7 +13,7 @@
     "sharp": "^0.30.4"
   },
   "scripts": {
-    "postinstall": "cp ./libtensorflowlite_c.so ./node_modules/tfjs-tflite-node/cc_deps/linux_amd64/libtensorflowlite_c.so"
+    "postinstall": "cp ./libtensorflowlite_c.so ./node_modules/tfjs-tflite-node/cc_deps/linux_amd64/libtensorflowlite_c.so || true"
   },
   "engines": {
     "node": "16.x"
