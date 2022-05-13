@@ -1,6 +1,10 @@
 {
   "type": "module",
   "dependencies": {
+    "@tensorflow/tfjs": "^3.15.0",
+    "tfjs-tflite-node": "^0.0.2",
+    "@tensorflow/tfjs-core": "^3.15.0",
+    "seedrandom": "^2.4.3",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "file-type": "^17.1.1",
     "fluent-ffmpeg": "^2.1.2",
@@ -8,10 +12,10 @@
     "node-tflite": "^0.0.2",
     "sharp": "^0.30.4"
   },
-  "engines": {
-    "node": "14.x"
-  },
   "scripts": {
-    "postinstall": "cp ./static/libtensorflowlite_c.so ./node_modules/node-tflite/build/Release/libtensorflowlite_c.so || true"
+    "postinstall": "cp ./libtensorflowlite_c.so ./node_modules/tfjs-tflite-node/cc_deps/linux_amd64/libtensorflowlite_c.so"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
