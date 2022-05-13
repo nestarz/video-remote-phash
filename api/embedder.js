@@ -1,21 +1,23 @@
-import { Interpreter } from "node-tflite";
 import { resolve } from "path";
 import fetch from "node-fetch";
 import sharp from "sharp";
-import { readFile } from "fs/promises";
 import { fileTypeFromStream } from "file-type";
+import "@tensorflow/tfjs-backend-cpu";
+import * as tf from "@tensorflow/tfjs-core";
+import * as tflite from "tfjs-tflite-node";
 
 const getModel = async (modelPath) => {
-  const interpreter = new Interpreter(await readFile(modelPath));
+  const model = resolve(modelPath);
+  const tfliteModel = await tflite.loadTFLiteModel(model);
 
   return {
     infer: async (buffer) => {
-      interpreter.allocateTensors();
-      interpreter.inputs[0].copyFrom(new Float32Array(buffer));
-      interpreter.invoke();
-      const outputData = new Float32Array(1001);
-      interpreter.outputs[0].copyTo(outputData);
-      return Array.from(outputData);
+      const tensor = tf.reshape(
+        tf.tensor(new Float32Array(buffer)),
+        [224, 224, -1]
+      );
+      const input = tf.sub(tf.div(tf.expandDims(tensor), 127.5), 1);
+      return tfliteModel.predict(input);
     },
   };
 };
@@ -33,7 +35,7 @@ const run = async (req, res) => {
     ? fetch(new URL(`/api/tile?url=${raw}`, tileUrl))
     : fetch(url)
   ).then(({ body }) =>
-    body.pipe(sharp()).resize(224, 224).raw({ depth: "char" }).toBuffer()
+    body.pipe(sharp()).resize(224, 224).raw({ depth: "uchar" }).toBuffer()
   );
   const tensor = await model.infer(buffer);
   res
@@ -41,7 +43,7 @@ const run = async (req, res) => {
       "Content-Type": "application/json",
       "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
     })
-    .end(JSON.stringify({ data: { tensor } }));
+    .end(JSON.stringify({ data: { tensor: Array.from(tensor.dataSync()) } }));
 };
 
 export default run;
