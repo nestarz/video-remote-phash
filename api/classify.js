@@ -1,7 +1,9 @@
 import sharp from "sharp";
 import { Transform } from "stream";
-import { ExtractFrames, ffmpeg } from "./utils.js";
-import movieNet, { getModelInfo as getMovieNetInfo } from "./movieNet.js";
+import { ExtractFrames, ffmpeg } from "./helpers/utils.js";
+import movieNet, {
+  getModelInfo as getMovieNetInfo,
+} from "./helpers/movieNet.js";
 
 class Embedder extends Transform {
   constructor(getModel) {
@@ -30,11 +32,20 @@ const run = (req, res) => {
   ffmpeg({ ss: 1, i, s, r: 2, t: 5, vcodec: "mjpeg", f: "rawvideo" }, "pipe:")
     .pipe(new ExtractFrames())
     .pipe(new Embedder(movieNet))
-    .pipe(res);
+    .pipe(
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
+      })
+    );
 };
 
 export default run;
 
-const DEMO_URL =
-  "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4";
-run({ query: { url: DEMO_URL } }, process.stdout);
+import("url")
+  .then(({ fileURLToPath: fn }) => process.argv[1] === fn(import.meta.url))
+  .then((isMain) => {
+    const DEMO_URL =
+      "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4";
+    if (isMain) run({ query: { url: DEMO_URL } }, process.stdout);
+  });
