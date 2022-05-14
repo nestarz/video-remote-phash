@@ -24,11 +24,14 @@ class Embedder extends Transform {
 }
 
 const run = (req, res) => {
-  const { url: raw, model } = req.query;
+  const { url: raw, model, tile } = req.query;
   if (!raw) throw Error("Missing video url");
   const { default: getModel, getModelInfo } =
     model === "movie" ? movieNet : mobileNet;
-  const i = encodeURI(decodeURIComponent(raw));
+  const url = encodeURI(decodeURIComponent(raw));
+  const loc = !req.headers || req.headers.host.includes("0.0.");
+  const tileUrl = loc ? "http://localhost:3000" : `https://${req.headers.host}`;
+  const i = tile ? new URL(`/api/tile?url=${raw}`, tileUrl) : url;
   const s = getModelInfo().shape.slice(0, 2).join("x");
   ffmpeg({ ss: 1, i, s, r: 2, t: 5, vcodec: "mjpeg", f: "rawvideo" }, "pipe:")
     .pipe(new ExtractFrames())
