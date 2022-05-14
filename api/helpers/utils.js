@@ -4,6 +4,7 @@ import { spawn } from "child_process";
 import sharp from "sharp";
 import * as tf from "@tensorflow/tfjs-core";
 
+const range = (k) => [...Array(k).keys()];
 const isString = (o) => typeof o === "string";
 const toParams = (o) =>
   o.flatMap((p) =>
@@ -16,14 +17,14 @@ export const ffmpeg = (...o) =>
 const imageToTensor = ({ data, info: { height: h, width: w, channels: c } }) =>
   tf.sub(tf.div(tf.tensor3d(data, [h, w, c], "float32"), 127.5), 1);
 
-export const bufferToTensor = (buffer, H, W) =>
+export const bufferToTensor = (buffer, H, W, p = 0) =>
   sharp(buffer)
     .resize(H, W)
     .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true })
     .then(imageToTensor)
-    .then((t) => tf.expandDims(tf.expandDims(t)));
+    .then((t) => range(p).reduce((t) => tf.expandDims(t), t));
 
 export class ExtractFrames extends Transform {
   constructor(magicNumberHex = "FFD8FF") {

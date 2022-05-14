@@ -49,16 +49,18 @@ const getOutput = (obj) => {
 
 export const getModelInfo = () => ({ shape: [H, W, C] });
 
-export default () => {
+export default async () => {
   let states = inputs.reduce((p, o) => ({ ...p, [o.name]: o.state }), {});
-  return async (buffer) => {
-    const clip = await bufferToTensor(buffer, H, W);
-    const { name, ...o } = inputs.find(({ slug }) => slug === "image");
-    const [logits, newStates] = getOutput(
-      model.predict({ ...states, [name]: quantizedScale(o, clip) })
-    );
-    states = newStates;
-    const output = Array.from(await tf.mul(tf.add(logits, 1), 127.5).data());
-    return { output, labels: labels[argmax(output)] };
+  return {
+    infer: async (buffer) => {
+      const clip = await bufferToTensor(buffer, H, W, 2);
+      const { name, ...o } = inputs.find(({ slug }) => slug === "image");
+      const [logits, newStates] = getOutput(
+        model.predict({ ...states, [name]: quantizedScale(o, clip) })
+      );
+      states = newStates;
+      const output = Array.from(await tf.mul(tf.add(logits, 1), 127.5).data());
+      return { output, labels: labels[argmax(output)] };
+    },
   };
 };
