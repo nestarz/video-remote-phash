@@ -102,7 +102,9 @@ export const testHandler = (run) => (query) => {
 };
 
 export const isMain = (url) =>
-  import("url").then(({ fileURLToPath: fn }) => process.argv[1] === fn(url));
+  import("url").then(
+    ({ fileURLToPath: fn }) => false && process.argv[1] === fn(url)
+  );
 
 export const norm = (a, b) =>
   a
