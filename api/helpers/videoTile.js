@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { ffmpeg } from "./utils.js";
+import { ffmpeg, layout, range } from "./utils.js";
 import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 
 const apply = (v, fn) => fn(v);
@@ -36,19 +36,24 @@ export default async (url) => {
     }
   );
 
-  const isVideo = duration > 0;
   const K = 50;
+  const isVideo = duration > 1;
   const maxDuration = Math.min(duration, 80);
   const N = Math.round(Math.sqrt(K));
   const I = maxDuration / K / 1.05;
   return ffmpeg(
     {
       i: url,
-      vf: [
+      filter_complex: [
         crop && !crop.includes("-") && `crop=${crop}`,
-        "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
+        "crop=min(ih\\,iw):min(ih\\,iw)",
+        isVideo && `scale=144:144`,
         isVideo &&
           `select='(isnan(prev_selected_t)+gte(t-prev_selected_t\,${I}))',tile=${N}x${N}`,
+        false &&
+          `${range(N * N)
+            .map(() => "[0:v]")
+            .join("")}xstack=inputs=${N * N}:layout=${layout(N)}`,
         `scale=1024:1024`,
       ]
         .filter((v) => v)

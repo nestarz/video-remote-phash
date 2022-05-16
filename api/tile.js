@@ -19,9 +19,9 @@ export default run;
 
 if (isMain(import.meta.url)) {
   const DEMO_URL =
-    "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4";
+    "https://indes-galantes-assets.s3-eu-west-1.amazonaws.com/capture104les-films-pelleas.jpg";
   run(
     { query: { url: DEMO_URL } },
-    { writeHead: () => createWriteStream("test.png") }
+    { writeHead: () => createWriteStream("api/test.png") }
   );
 }

@@ -10,7 +10,9 @@ import videoTile from "./helpers/videoTile.js";
 import * as movieNet from "./helpers/movieNet.js";
 import * as mobileNet from "./helpers/mobileNet.js";
 import * as hashNet from "./helpers/hashNet.js";
+import sharp from "sharp";
 
+let i = 0;
 class Embedder extends Transform {
   constructor(getModel) {
     super();
@@ -19,6 +21,7 @@ class Embedder extends Transform {
   }
 
   async _transform(chunk, _, next) {
+    await sharp(chunk).toFile(`api/test${i++}.jpg`);
     this.outputs = await (await this.model).infer(chunk);
     next();
   }
@@ -56,10 +59,9 @@ export default run;
 
 if (await isMain(import.meta.url)) {
   const urls = [
-    "https://dawcqwjlx34ah.cloudfront.net/dcc7ba87-b10f-4a21-9352-290f433292fe_426248732614519.mp4",
-    "https://dawcqwjlx34ah.cloudfront.net/dcc7ba87-b10f-4a21-9352-290f433292fe_500837968322328.mp4",
-    "https://dawcqwjlx34ah.cloudfront.net/dcc7ba87-b10f-4a21-9352-290f433292fe_688319849051035.mp4",
-    "https://dawcqwjlx34ah.cloudfront.net/dcc7ba87-b10f-4a21-9352-290f433292fe_659017755531594.mp4",
+    "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4",
+    "https://indes-galantes-assets.s3-eu-west-1.amazonaws.com/capture104les-films-pelleas.jpg",
+    "https://movies-assets.s3-eu-west-1.amazonaws.com/2c1d37b2-2e88-4d12-bbce-83972b60577f/4.jpg",
   ];
   const predicts = await Promise.all(
     urls

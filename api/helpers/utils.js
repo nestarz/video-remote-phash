@@ -11,7 +11,7 @@ import { pipeline } from "stream/promises";
 import { access } from "fs/promises";
 
 export const noopLog = (v) => console.log(v) ?? v;
-const range = (k) => [...Array(k).keys()];
+export const range = (k) => [...Array(k).keys()];
 const isString = (o) => typeof o === "string";
 const toParams = (o) =>
   o.flatMap((p) =>
@@ -121,3 +121,11 @@ export const getKnn = (arr, getVec) =>
       }))
       .sort(({ distance: a }, { distance: b }) => a - b)
   );
+
+const outer = ([v1, v2]) => v1.map((x) => v2.map((y) => `${x}_${y}`));
+const tile = (N, fn) =>
+  range(N).map((i, _, arr) => arr.slice(0, i).map(fn).join("+") || 0);
+export const layout = (N) =>
+  outer([tile(N, (k) => `w${k * N}`), tile(N, (k) => `h${k}`)])
+    .flat()
+    .join("|");
