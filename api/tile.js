@@ -1,9 +1,7 @@
-import ffmpeg from "fluent-ffmpeg";
-import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 import { PassThrough } from "stream";
 import { spawn } from "child_process";
-
-ffmpeg.setFfmpegPath(ffmpegPath);
+import { ffmpeg } from "./helpers/utils.js";
+import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 
 const apply = (v, fn) => fn(v);
 const exec = async (cmd, args, onData) => {
@@ -18,7 +16,7 @@ const exec = async (cmd, args, onData) => {
   });
 };
 
-export default async (req, res) => {
+const run = async (req, res) => {
   const { url: raw } = req.query;
   if (!raw) throw Error("Missing video url");
   const url = encodeURI(decodeURIComponent(raw));
@@ -54,9 +52,10 @@ export default async (req, res) => {
     const maxDuration = Math.min(duration, 120);
     const N = Math.round(Math.sqrt(K));
     const I = maxDuration / K / 1.05;
-    ffmpeg(url)
-      .outputOptions([
-        `-vf ${[
+    ffmpeg(
+      {
+        i: url,
+        vf: [
           crop && !crop.includes("-") && `crop=${crop}`,
           "crop=min(ih\\,iw):min(ih\\,iw),scale=144:144",
           isVideo &&
@@ -64,11 +63,13 @@ export default async (req, res) => {
           `scale=1024:1024`,
         ]
           .filter((v) => v)
-          .join(",")}`,
-        "-frames:v 1",
-        "-vcodec png",
-        "-f rawvideo",
-      ])
+          .join(","),
+        "frames:v": 1,
+        vcodec: "png",
+        f: "rawvideo",
+      },
+      "pipe:"
+    )
       .on("error", console.error)
       .pipe(stream, { end: true });
   });
@@ -81,3 +82,17 @@ export default async (req, res) => {
     })
     .end(buffer);
 };
+
+export default run;
+
+import("url")
+  .then(({ fileURLToPath: fn }) => process.argv[1] === fn(import.meta.url))
+  .then((isMain) => {
+    const DEMO_URL =
+      "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4";
+    if (isMain)
+      run(
+        { query: { url: DEMO_URL, model: "movsie" } },
+        { writeHead: () => process.stdout }
+      );
+  });
