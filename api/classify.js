@@ -49,7 +49,7 @@ import("url")
   .then(({ fileURLToPath: fn }) => process.argv[1] === fn(import.meta.url))
   .then((isMain) => {
     const DEMO_URL =
-      "https://dawcqwjlx34ah.cloudfront.net/dcc7ba87-b10f-4a21-9352-290f433292fe_342125317282510.mp4";
+      "https://www.academiedugout.fr/images/17157/1200-auto/pomme_000.jpg";
     if (isMain)
       run(
         { query: { url: DEMO_URL, model: "movsie" } },

@@ -1,5 +1,6 @@
 import "@tensorflow/tfjs-backend-cpu";
 import * as tflite from "tfjs-tflite-node";
+import * as tf from "@tensorflow/tfjs-core";
 import { bufferToTensor, download } from "./utils.js";
 import { readFile } from "fs/promises";
 import { resolve } from "path";
@@ -17,11 +18,14 @@ const labels = await readFile(labelPath, "utf-8").then((a) => a.split("\n"));
 export const getModelInfo = () => ({ shape: [H, W, C] });
 
 export default async () => {
+  const state = [];
   return {
     infer: async (buffer) => {
       const tensor = await bufferToTensor(buffer, H, W, 1);
-      const logits = tfliteModel.predict(tensor);
-      const output = Array.from(await logits.data());
+      state.push(tfliteModel.predict(tensor));
+      const output = await tf
+        .div(tf.sum(tf.stack(state), 0), state.length)
+        .data();
       return {
         scores: Object.entries(output)
           .sort(([, a], [, b]) => b - a)
