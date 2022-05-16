@@ -50,7 +50,7 @@ export default async (url) => {
     {
       i: url,
       filter_complex: [
-        crop && !crop.includes("-") && `crop=${crop}`,
+        isVideo && crop && !crop.includes("-") && `crop=${crop}`,
         "crop=min(ih\\,iw):min(ih\\,iw)",
         isVideo && `scale=144:144`,
         isVideo &&
