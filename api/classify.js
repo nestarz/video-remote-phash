@@ -38,7 +38,8 @@ const run = (req, res) => {
       res.writeHead(200, {
         "Content-Type": "application/json",
         "Cache-Control": `s-maxage=${86400 * 30}, stale-while-revalidate`,
-      })
+      }),
+      { end: true }
     );
 };
 

@@ -2,7 +2,7 @@ import "@tensorflow/tfjs-backend-cpu";
 import * as tf from "@tensorflow/tfjs-core";
 import * as tflite from "tfjs-tflite-node";
 import { readFile } from "fs/promises";
-import { bufferToTensor, download, noopLog } from "./utils.js";
+import { bufferToTensor, download } from "./utils.js";
 import { resolve } from "path";
 
 const modelPath = await download(
@@ -14,15 +14,13 @@ const model = await tflite.loadTFLiteModel(modelPath);
 const labelPath = resolve("static/kinetics-i3d_label_map_600.txt");
 const labels = await readFile(labelPath, "utf-8").then((a) => a.split("\n"));
 
-const argmax = (arr) => arr.reduce((m, x, i, arr) => (x > arr[m] ? i : m), 0);
-const find = (d, obj) => Object.entries(obj).find(([k]) => d.includes(k))[1];
-
 const quantizedScale = ({ name, dtype, shape, quantization: [s, zP] }, state) =>
   name?.includes("frame_count") || dtype === "float32" || scale === 0
     ? state ?? tf.zeros(shape, dtype)
     : tf.cast(tf.sum(tf.div(state, s), zP), dtype);
 
 const getSlug = (name) => name.slice("serving_default_".length, -":0".length);
+const find = (d, obj) => Object.entries(obj).find(([k]) => d.includes(k))[1];
 const inputs = model.modelRunner
   .getInputs()
   .map((input) => ({ input }))
@@ -64,12 +62,10 @@ export default async () => {
       const output = Array.from(await logits.data());
       return {
         output,
-        scores: noopLog(
-          Object.entries(output)
-            .sort(([, a], [, b]) => b - a)
-            .map(([k, v]) => ({ label: labels[+k], score: v }))
-            .slice(0, 10)
-        ),
+        scores: Object.entries(output)
+          .sort(([, a], [, b]) => b - a)
+          .map(([k, v]) => ({ label: labels[+k], score: v }))
+          .slice(0, 10),
       };
     },
   };

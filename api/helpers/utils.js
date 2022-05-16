@@ -77,8 +77,8 @@ export class ExtractFrames extends Transform {
     }
     done();
   }
-  _flush() {
+  _flush(end) {
     const startIndex = this.currentData.indexOf(this.magicNumber);
-    if (startIndex >= 0) this.push(this.currentData.slice(startIndex));
+    end(null, startIndex >= 0 ? this.currentData.slice(startIndex) : null);
   }
 }
