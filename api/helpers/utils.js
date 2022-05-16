@@ -10,6 +10,7 @@ import fetch from "node-fetch";
 import { pipeline } from "stream/promises";
 import { access } from "fs/promises";
 
+export const noopLog = (v) => console.log(v) ?? v;
 const range = (k) => [...Array(k).keys()];
 const isString = (o) => typeof o === "string";
 const toParams = (o) =>
@@ -17,8 +18,12 @@ const toParams = (o) =>
     isString(p) ? p : Object.entries(p).flatMap(([k, v]) => [`-${k}`, v])
   );
 const logCmd = (a, b) => console.log(a, b.join(" ")) ?? [a, b];
-export const ffmpeg = (...o) =>
-  spawn(...logCmd(ffmpegPath, toParams(o))).stdout;
+export const ffmpeg = (...o) => {
+  const p = spawn(...logCmd(ffmpegPath, toParams(o)));
+  p.stderr.on("data", (v) => console.log(String(v)));
+  p.stderr.on("error", (v) => console.log(String(v)));
+  return p.stdout;
+};
 
 const imageToTensor = ({ data, info: { height: h, width: w, channels: c } }) =>
   tf.sub(tf.div(tf.tensor3d(data, [h, w, c], "float32"), 127.5), 1);
@@ -66,11 +71,15 @@ export class ExtractFrames extends Transform {
 
       // Handle found frame
       this.push(this.currentData.slice(startIndex, endIndex)); // emit a frame
+      console.log("ok");
       this.currentData = this.currentData.slice(endIndex); // remove frame data from current data
       if (startIndex > 0)
         console.error(`Discarded ${startIndex} bytes of invalid data`);
     }
-
     done();
+  }
+  _flush() {
+    const startIndex = this.currentData.indexOf(this.magicNumber);
+    if (startIndex >= 0) this.push(this.currentData.slice(startIndex));
   }
 }

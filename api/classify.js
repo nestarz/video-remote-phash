@@ -33,7 +33,7 @@ const run = (req, res) => {
   const tileUrl = loc ? "http://localhost:3000" : `https://${req.headers.host}`;
   const i = tile ? new URL(`/api/tile?url=${raw}`, tileUrl) : url;
   const s = getModelInfo().shape.slice(0, 2).join("x");
-  ffmpeg({ ss: 1, i, s, r: 2, t: 5, vcodec: "mjpeg", f: "rawvideo" }, "pipe:")
+  ffmpeg({ i, s, r: 2, t: 5, vcodec: "mjpeg", f: "rawvideo" }, "pipe:")
     .pipe(new ExtractFrames())
     .pipe(new Embedder(getModel))
     .pipe(
@@ -50,10 +50,10 @@ import("url")
   .then(({ fileURLToPath: fn }) => process.argv[1] === fn(import.meta.url))
   .then((isMain) => {
     const DEMO_URL =
-      "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4";
+      "https://www.academiedugout.fr/images/17157/1200-auto/pomme_000.jpg";
     if (isMain)
       run(
-        { query: { url: DEMO_URL, model: "none" } },
+        { query: { url: DEMO_URL, model: "movie" } },
         { writeHead: () => process.stdout }
       );
   });

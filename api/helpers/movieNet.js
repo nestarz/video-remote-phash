@@ -2,7 +2,7 @@ import "@tensorflow/tfjs-backend-cpu";
 import * as tf from "@tensorflow/tfjs-core";
 import * as tflite from "tfjs-tflite-node";
 import { readFile } from "fs/promises";
-import { bufferToTensor, download } from "./utils.js";
+import { bufferToTensor, download, noopLog } from "./utils.js";
 import { resolve } from "path";
 
 const modelPath = await download(
@@ -61,8 +61,16 @@ export default async () => {
         model.predict({ ...states, [name]: quantizedScale(o, clip) })
       );
       states = newStates;
-      const output = Array.from(await tf.mul(tf.add(logits, 1), 127.5).data());
-      return { output, labels: labels[argmax(output)] };
+      const output = Array.from(await logits.data());
+      return {
+        output,
+        scores: noopLog(
+          Object.entries(output)
+            .sort(([, a], [, b]) => b - a)
+            .map(([k, v]) => ({ label: labels[+k], score: v }))
+            .slice(0, 10)
+        ),
+      };
     },
   };
 };
