@@ -9,14 +9,13 @@ const modelPath = await download(
   "https://storage.googleapis.com/tfhub-lite-models/tensorflow/lite-model/movinet/a2/stream/kinetics-600/classification/tflite/float16/2.tflite",
   "lite-model_movinet_a2_stream_kinetics-600_classification_tflite_float16_2.tflite"
 );
-const labelPath = resolve("static/kinetics-i3d_label_map_600.txt");
 const [H, W, C] = [224, 224, 3];
+const model = await tflite.loadTFLiteModel(modelPath);
+const labelPath = resolve("static/kinetics-i3d_label_map_600.txt");
+const labels = await readFile(labelPath, "utf-8").then((a) => a.split("\n"));
 
 const argmax = (arr) => arr.reduce((m, x, i, arr) => (x > arr[m] ? i : m), 0);
 const find = (d, obj) => Object.entries(obj).find(([k]) => d.includes(k))[1];
-
-const labels = await readFile(labelPath, "utf-8").then((a) => a.split("\n"));
-const model = await tflite.loadTFLiteModel(modelPath);
 
 const quantizedScale = ({ name, dtype, shape, quantization: [s, zP] }, state) =>
   name?.includes("frame_count") || dtype === "float32" || scale === 0

@@ -3,6 +3,7 @@ import * as tflite from "tfjs-tflite-node";
 import * as tf from "@tensorflow/tfjs-core";
 import { bufferToTensor, download } from "./utils.js";
 import { readFile } from "fs/promises";
+import { resolve } from "path";
 
 const modelPath = await download(
   "https://storage.googleapis.com/tfhub-lite-models/google/lite-model/imagenet/mobilenet_v3_large_100_224/classification/5/default/1.tflite",
@@ -11,7 +12,7 @@ const modelPath = await download(
 const [H, W, C] = [224, 224, 3];
 const tfliteModel = await tflite.loadTFLiteModel(modelPath);
 
-const labelPath = "static/labels_mobilenet_quant_v1_224.txt";
+const labelPath = resolve("static/labels_mobilenet_quant_v1_224.txt");
 const argmax = (arr) => arr.reduce((m, x, i, arr) => (x > arr[m] ? i : m), 0);
 const labels = await readFile(labelPath, "utf-8").then((a) => a.split("\n"));
 
