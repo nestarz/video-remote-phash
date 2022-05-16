@@ -26,11 +26,11 @@ export const ffmpeg = (...o) => {
 };
 
 const imageToTensor = ({ data, info: { height: h, width: w, channels: c } }) =>
-  tf.sub(tf.div(tf.tensor3d(data, [h, w, c], "float32"), 127.5), 1);
+  tf.div(tf.tensor3d(data, [h, w, c], "float32"), 255);
 
 export const bufferToTensor = (buffer, H, W, p = 0) =>
   sharp(buffer)
-    .resize(H, W)
+    .resize(H, W, { kernel: "nearest" })
     .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true })
@@ -103,7 +103,7 @@ export const testHandler = (run) => (query) => {
 
 export const isMain = (url) =>
   import("url").then(
-    ({ fileURLToPath: fn }) => false && process.argv[1] === fn(url)
+    ({ fileURLToPath: fn }) => process.env.DEV && process.argv[1] === fn(url)
   );
 
 export const norm = (a, b) =>

@@ -7,7 +7,7 @@ import { resolve } from "path";
 
 const modelPath = await download(
   "https://storage.googleapis.com/tfhub-lite-models/tensorflow/lite-model/movinet/a2/stream/kinetics-600/classification/tflite/float16/2.tflite",
-  "lite-model_movinet_a2_stream_kinetics-600_classification_tflite_float16_2.tflite"
+  "lite-model_movinet_a2_stream_kinetics-600_classification_tflite_float16_3.tflite"
 );
 const [H, W, C] = [224, 224, 3];
 const model = await tflite.loadTFLiteModel(modelPath);
