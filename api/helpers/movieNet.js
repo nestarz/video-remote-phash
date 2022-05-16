@@ -3,10 +3,12 @@ import * as tf from "@tensorflow/tfjs-core";
 import * as tflite from "tfjs-tflite-node";
 import { readFile } from "fs/promises";
 import { bufferToTensor } from "./utils.js";
+import { resolve } from "path";
 
-const modelPath =
-  "/var/task/static/lite-model_movinet_a1_stream_kinetics-600_classification_tflite_float16_2.tflite";
-const labelPath = "/var/task/static/kinetics-i3d_label_map_600.txt";
+const modelPath = resolve(
+  "static/lite-model_movinet_a1_stream_kinetics-600_classification_tflite_float16_2.tflite"
+);
+const labelPath = resolve("static/kinetics-i3d_label_map_600.txt");
 const [H, W, C] = [172, 172, 3];
 
 const argmax = (arr) => arr.reduce((m, x, i, arr) => (x > arr[m] ? i : m), 0);
