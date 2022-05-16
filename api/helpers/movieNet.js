@@ -6,7 +6,7 @@ import { bufferToTensor } from "./utils.js";
 import { resolve } from "path";
 
 const modelPath = resolve(
-  "static/lite-model_movinet_a1_stream_kinetics-600_classification_tflite_float16_2.tflite"
+  "static/lite-model_movinet_a0_stream_kinetics-600_classification_tflite_float16_2.tflite"
 );
 const labelPath = resolve("static/kinetics-i3d_label_map_600.txt");
 const [H, W, C] = [172, 172, 3];

@@ -3,6 +3,7 @@ import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 import { spawn } from "child_process";
 import sharp from "sharp";
 import * as tf from "@tensorflow/tfjs-core";
+import { createWriteStream } from "fs";
 
 const range = (k) => [...Array(k).keys()];
 const isString = (o) => typeof o === "string";
@@ -25,6 +26,9 @@ export const bufferToTensor = (buffer, H, W, p = 0) =>
     .toBuffer({ resolveWithObject: true })
     .then(imageToTensor)
     .then((t) => range(p).reduce((t) => tf.expandDims(t), t));
+
+export const download = async (url, path) =>
+  pipeline((await fetch(url)).body, createWriteStream(path));
 
 export class ExtractFrames extends Transform {
   constructor(magicNumberHex = "FFD8FF") {
