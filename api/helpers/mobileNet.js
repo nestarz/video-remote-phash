@@ -1,6 +1,5 @@
 import "@tensorflow/tfjs-backend-cpu";
 import * as tflite from "tfjs-tflite-node";
-import * as tf from "@tensorflow/tfjs-core";
 import { bufferToTensor, download, noopLog } from "./utils.js";
 import { readFile } from "fs/promises";
 import { resolve } from "path";
@@ -25,10 +24,12 @@ export default async () => {
       const output = Array.from(await logits.data());
       return {
         output,
-        scores: Object.entries(output)
-          .sort(([, a], [, b]) => b - a)
-          .map(([k, v]) => ({ label: labels[+k], score: v }))
-          .slice(0, 10),
+        scores: noopLog(
+          Object.entries(output)
+            .sort(([, a], [, b]) => b - a)
+            .map(([k, v]) => ({ label: labels[+k], score: v }))
+            .slice(0, 10)
+        ),
       };
     },
   };

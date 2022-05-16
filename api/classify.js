@@ -12,7 +12,6 @@ class Embedder extends Transform {
   }
 
   async _transform(chunk, _, next) {
-    await sharp(chunk).toFile("api/current.png");
     this.outputs = await (await this.model).infer(chunk);
     next();
   }
