@@ -1,6 +1,8 @@
 import { spawn } from "child_process";
 import { ffmpeg, layout, range } from "./utils.js";
 import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
+import { fileTypeFromStream } from "file-type";
+import fetch from "node-fetch";
 
 const apply = (v, fn) => fn(v);
 const exec = async (cmd, args, onData) => {
@@ -36,8 +38,11 @@ export default async (url) => {
     }
   );
 
+  const mime = (await fileTypeFromStream((await fetch(url)).body)).mime;
+  const isVideo = mime.includes("video");
+  if (isVideo && !(duration > 0)) throw Error("Can't find duration.");
+
   const K = 50;
-  const isVideo = duration > 1;
   const maxDuration = Math.min(duration, 80);
   const N = Math.round(Math.sqrt(K));
   const I = maxDuration / K / 1.05;
