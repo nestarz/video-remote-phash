@@ -56,16 +56,16 @@ const run = async (req, res) => {
 
 export default run;
 
-if (await isMain(import.meta.url)) {
-  const urls = [
-    "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4",
-    "https://indes-galantes-assets.s3-eu-west-1.amazonaws.com/capture104les-films-pelleas.jpg",
-    "https://movies-assets.s3-eu-west-1.amazonaws.com/2c1d37b2-2e88-4d12-bbce-83972b60577f/4.jpg",
-  ];
-  const predicts = await Promise.all(
-    urls
-      .map((url) => ({ url, model: "mobileNet", tile: true }))
-      .map(testHandler(run))
-  ).then((arr) => arr.map((o, i) => ({ ...o, url: urls[i] })));
-  console.log(getKnn(predicts, ({ output }) => output));
-}
+// if (await isMain(import.meta.url)) {
+//   const urls = [
+//     "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4",
+//     "https://indes-galantes-assets.s3-eu-west-1.amazonaws.com/capture104les-films-pelleas.jpg",
+//     "https://movies-assets.s3-eu-west-1.amazonaws.com/2c1d37b2-2e88-4d12-bbce-83972b60577f/4.jpg",
+//   ];
+//   const predicts = await Promise.all(
+//     urls
+//       .map((url) => ({ url, model: "mobileNet", tile: true }))
+//       .map(testHandler(run))
+//   ).then((arr) => arr.map((o, i) => ({ ...o, url: urls[i] })));
+//   console.log(getKnn(predicts, ({ output }) => output));
+// }
