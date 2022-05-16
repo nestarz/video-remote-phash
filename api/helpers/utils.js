@@ -71,7 +71,6 @@ export class ExtractFrames extends Transform {
 
       // Handle found frame
       this.push(this.currentData.slice(startIndex, endIndex)); // emit a frame
-      console.log("ok");
       this.currentData = this.currentData.slice(endIndex); // remove frame data from current data
       if (startIndex > 0)
         console.error(`Discarded ${startIndex} bytes of invalid data`);

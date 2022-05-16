@@ -1,4 +1,3 @@
-import sharp from "sharp";
 import { Transform } from "stream";
 import { ExtractFrames, ffmpeg } from "./helpers/utils.js";
 import * as movieNet from "./helpers/movieNet.js";
@@ -32,7 +31,7 @@ const run = (req, res) => {
   const tileUrl = loc ? "http://localhost:3000" : `https://${req.headers.host}`;
   const i = tile ? new URL(`/api/tile?url=${raw}`, tileUrl) : url;
   const s = getModelInfo().shape.slice(0, 2).join("x");
-  ffmpeg({ i, s, r: 2, t: 5, vcodec: "mjpeg", f: "rawvideo" }, "pipe:")
+  ffmpeg({ i, s, r: 2, t: 1, vcodec: "mjpeg", f: "rawvideo" }, "pipe:")
     .pipe(new ExtractFrames())
     .pipe(new Embedder(getModel))
     .pipe(
@@ -49,10 +48,10 @@ import("url")
   .then(({ fileURLToPath: fn }) => process.argv[1] === fn(import.meta.url))
   .then((isMain) => {
     const DEMO_URL =
-      "https://www.academiedugout.fr/images/17157/1200-auto/pomme_000.jpg";
+      "https://dawcqwjlx34ah.cloudfront.net/dcc7ba87-b10f-4a21-9352-290f433292fe_342125317282510.mp4";
     if (isMain)
       run(
-        { query: { url: DEMO_URL, model: "movie" } },
+        { query: { url: DEMO_URL, model: "movsie" } },
         { writeHead: () => process.stdout }
       );
   });
