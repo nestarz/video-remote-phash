@@ -61,11 +61,11 @@ export default async () => {
       states = newStates;
       const output = Array.from(await logits.data());
       return {
-        output,
         scores: Object.entries(output)
           .sort(([, a], [, b]) => b - a)
           .map(([k, v]) => ({ label: labels[+k], score: v }))
           .slice(0, 10),
+        output,
       };
     },
   };
