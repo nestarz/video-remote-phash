@@ -5,8 +5,8 @@ import { readFile } from "fs/promises";
 import { bufferToTensor } from "./utils.js";
 
 const modelPath =
-  "static/lite-model_movinet_a1_stream_kinetics-600_classification_tflite_float16_2.tflite";
-const labelPath = "static/kinetics-i3d_label_map_600.txt";
+  "/var/task/static/lite-model_movinet_a1_stream_kinetics-600_classification_tflite_float16_2.tflite";
+const labelPath = "/var/task/static/kinetics-i3d_label_map_600.txt";
 const [H, W, C] = [172, 172, 3];
 
 const argmax = (arr) => arr.reduce((m, x, i, arr) => (x > arr[m] ? i : m), 0);
