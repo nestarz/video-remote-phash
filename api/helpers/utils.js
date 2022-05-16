@@ -20,7 +20,7 @@ const toParams = (o) =>
 const logCmd = (a, b) => console.log(a, b.join(" ")) ?? [a, b];
 export const ffmpeg = (...o) => {
   const p = spawn(...logCmd(ffmpegPath, toParams(o)));
-  p.stderr.on("data", (v) => console.log(String(v)));
+  //p.stderr.on("data", (v) => console.log(String(v)));
   p.stderr.on("error", (v) => console.log(String(v)));
   return p.stdout;
 };
@@ -82,3 +82,42 @@ export class ExtractFrames extends Transform {
     end(null, startIndex >= 0 ? this.currentData.slice(startIndex) : null);
   }
 }
+
+export const testHandler = (run) => (query) => {
+  class Log extends Transform {
+    constructor(fn) {
+      super();
+      this.fn = fn;
+    }
+    async _transform(chunk, _, end) {
+      console.log(query, String(chunk));
+      await Promise.resolve(this.fn(JSON.parse(chunk)));
+      end();
+    }
+  }
+
+  return new Promise((res) =>
+    run({ query }, { writeHead: () => new Log(res) })
+  );
+};
+
+export const isMain = (url) =>
+  import("url").then(({ fileURLToPath: fn }) => process.argv[1] === fn(url));
+
+export const norm = (a, b) =>
+  a
+    .map((x, i) => Math.abs(x - b[i]) ** 2) // square the difference
+    .reduce((sum, now) => sum + now) ** // sum
+  (1 / 2);
+
+export const getKnn = (arr, getVec) =>
+  arr.flatMap((a, i) =>
+    arr
+      .filter((_, j) => i < j)
+      .map((b) => ({
+        a: a.url,
+        b: b.url,
+        distance: norm(getVec(a), getVec(b)),
+      }))
+      .sort(({ distance: a }, { distance: b }) => a - b)
+  );

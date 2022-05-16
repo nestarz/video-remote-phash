@@ -31,7 +31,7 @@ export default async () => {
           .sort(([, a], [, b]) => b - a)
           .map(([k, v]) => ({ label: labels[+k], score: v }))
           .slice(0, 10),
-        output,
+        output: Array.from(output),
       };
     },
   };

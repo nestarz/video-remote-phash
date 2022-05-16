@@ -59,12 +59,16 @@ export default async () => {
         model.predict({ ...states, [name]: quantizedScale(o, clip) })
       );
       states = newStates;
+      const layer = Array.from(
+        await states["serving_default_state_block3_layer3_pool_buffer:0"].data()
+      );
       const output = Array.from(await logits.data());
       return {
         scores: Object.entries(output)
           .sort(([, a], [, b]) => b - a)
           .map(([k, v]) => ({ label: labels[+k], score: v }))
           .slice(0, 10),
+        layer,
         output,
       };
     },
