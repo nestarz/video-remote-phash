@@ -53,7 +53,7 @@ import("url")
       "https://dawcqwjlx34ah.cloudfront.net/86042406-c9dc-4169-b97e-7af24edf2837_1gAmPQJ5f-A.mp4";
     if (isMain)
       run(
-        { query: { url: DEMO_URL, model: "movie" } },
+        { query: { url: DEMO_URL, model: "none" } },
         { writeHead: () => process.stdout }
       );
   });

@@ -1,14 +1,15 @@
-import { resolve } from "path";
 import "@tensorflow/tfjs-backend-cpu";
 import * as tflite from "tfjs-tflite-node";
 import * as tf from "@tensorflow/tfjs-core";
-import { bufferToTensor } from "./utils.js";
+import { bufferToTensor, download } from "./utils.js";
 import { readFile } from "fs/promises";
 
-const modelPath = resolve("static/mobilenet_v2_1.0_224.tflite");
-const model = resolve(modelPath);
+const modelPath = await download(
+  "https://storage.googleapis.com/tfhub-lite-models/google/lite-model/imagenet/mobilenet_v3_large_100_224/classification/5/default/1.tflite",
+  "lite-model_imagenet_mobilenet_v3_large_100_224_classification_5_default_1.tflite"
+);
 const [H, W, C] = [224, 224, 3];
-const tfliteModel = await tflite.loadTFLiteModel(model);
+const tfliteModel = await tflite.loadTFLiteModel(modelPath);
 
 const labelPath = "static/labels_mobilenet_quant_v1_224.txt";
 const argmax = (arr) => arr.reduce((m, x, i, arr) => (x > arr[m] ? i : m), 0);

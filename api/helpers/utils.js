@@ -4,6 +4,11 @@ import { spawn } from "child_process";
 import sharp from "sharp";
 import * as tf from "@tensorflow/tfjs-core";
 import { createWriteStream } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
+import fetch from "node-fetch";
+import { pipeline } from "stream/promises";
+import { access } from "fs/promises";
 
 const range = (k) => [...Array(k).keys()];
 const isString = (o) => typeof o === "string";
@@ -27,8 +32,13 @@ export const bufferToTensor = (buffer, H, W, p = 0) =>
     .then(imageToTensor)
     .then((t) => range(p).reduce((t) => tf.expandDims(t), t));
 
-export const download = async (url, path) =>
-  pipeline((await fetch(url)).body, createWriteStream(path));
+const tmpPath = (path) => join(tmpdir(), path);
+export const download = (url, path) =>
+  access(tmpPath(path))
+    .catch(async () =>
+      pipeline((await fetch(url)).body, createWriteStream(tmpPath(path)))
+    )
+    .then(() => tmpPath(path));
 
 export class ExtractFrames extends Transform {
   constructor(magicNumberHex = "FFD8FF") {

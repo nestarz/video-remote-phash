@@ -2,14 +2,15 @@ import "@tensorflow/tfjs-backend-cpu";
 import * as tf from "@tensorflow/tfjs-core";
 import * as tflite from "tfjs-tflite-node";
 import { readFile } from "fs/promises";
-import { bufferToTensor } from "./utils.js";
+import { bufferToTensor, download } from "./utils.js";
 import { resolve } from "path";
 
-const modelPath = resolve(
-  "static/lite-model_movinet_a0_stream_kinetics-600_classification_tflite_float16_2.tflite"
+const modelPath = await download(
+  "https://storage.googleapis.com/tfhub-lite-models/tensorflow/lite-model/movinet/a2/stream/kinetics-600/classification/tflite/float16/2.tflite",
+  "lite-model_movinet_a2_stream_kinetics-600_classification_tflite_float16_2.tflite"
 );
 const labelPath = resolve("static/kinetics-i3d_label_map_600.txt");
-const [H, W, C] = [172, 172, 3];
+const [H, W, C] = [224, 224, 3];
 
 const argmax = (arr) => arr.reduce((m, x, i, arr) => (x > arr[m] ? i : m), 0);
 const find = (d, obj) => Object.entries(obj).find(([k]) => d.includes(k))[1];
