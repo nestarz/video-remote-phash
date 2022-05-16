@@ -4,12 +4,9 @@
     "@tensorflow/tfjs": "^3.15.0",
     "tfjs-tflite-node": "^0.0.2",
     "@tensorflow/tfjs-core": "^3.15.0",
-    "seedrandom": "^2.4.3",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "file-type": "^17.1.1",
-    "fluent-ffmpeg": "^2.1.2",
     "node-fetch": "^3.2.4",
-    "node-tflite": "^0.0.2",
     "sharp": "^0.30.4"
   },
   "scripts": {
