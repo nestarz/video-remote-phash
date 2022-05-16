@@ -16,12 +16,3 @@ const run = async (req, res) => {
 };
 
 export default run;
-
-if (isMain(import.meta.url)) {
-  const DEMO_URL =
-    "https://indes-galantes-assets.s3-eu-west-1.amazonaws.com/capture104les-films-pelleas.jpg";
-  run(
-    { query: { url: DEMO_URL } },
-    { writeHead: () => createWriteStream("api/test.png") }
-  );
-}
